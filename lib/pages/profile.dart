@@ -60,7 +60,7 @@ class _ProfileState extends State<Profile> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: Text('WOOBLE'),
+        title: Text('ChiveroApp'),
         actions: [
           widget.profileId == firebaseAuth.currentUser!.uid
               ? Center(
@@ -76,7 +76,7 @@ class _ProfileState extends State<Profile> {
                         );
                       },
                       child: Text(
-                        'Log Out',
+                        'Cerrar Sesión',
                         style: TextStyle(
                           fontWeight: FontWeight.w900,
                           fontSize: 15.0,
@@ -192,34 +192,7 @@ class _ProfileState extends State<Profile> {
                                         ),
                                       ],
                                     ),
-                                    widget.profileId == currentUserId()
-                                        ? InkWell(
-                                            onTap: () {
-                                              Navigator.of(context).push(
-                                                CupertinoPageRoute(
-                                                  builder: (_) => Setting(),
-                                                ),
-                                              );
-                                            },
-                                            child: Column(
-                                              children: [
-                                                Icon(
-                                                  Ionicons.settings_outline,
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .secondary,
-                                                ),
-                                                Text(
-                                                  'settings',
-                                                  style: TextStyle(
-                                                    fontSize: 11.5,
-                                                  ),
-                                                )
-                                              ],
-                                            ),
-                                          )
-                                        : const Text('')
-                                    // : buildLikeButton()
+                                    
                                   ],
                                 ),
                               ],
@@ -263,9 +236,9 @@ class _ProfileState extends State<Profile> {
                                           snapshot.data;
                                       List<DocumentSnapshot> docs = snap!.docs;
                                       return buildCount(
-                                          "POSTS", docs.length ?? 0);
+                                          "PUBLICACIONES", docs.length ?? 0);
                                     } else {
-                                      return buildCount("POSTS", 0);
+                                      return buildCount("PUBLICACIONES", 0);
                                     }
                                   },
                                 ),
@@ -289,9 +262,9 @@ class _ProfileState extends State<Profile> {
                                           snapshot.data;
                                       List<DocumentSnapshot> docs = snap!.docs;
                                       return buildCount(
-                                          "FOLLOWERS", docs.length ?? 0);
+                                          "SEGUIDORES", docs.length ?? 0);
                                     } else {
-                                      return buildCount("FOLLOWERS", 0);
+                                      return buildCount("SEGUIDORES", 0);
                                     }
                                   },
                                 ),
@@ -315,9 +288,9 @@ class _ProfileState extends State<Profile> {
                                           snapshot.data;
                                       List<DocumentSnapshot> docs = snap!.docs;
                                       return buildCount(
-                                          "FOLLOWING", docs.length ?? 0);
+                                          "SIGUIENDO", docs.length ?? 0);
                                     } else {
-                                      return buildCount("FOLLOWING", 0);
+                                      return buildCount("SIGUIENDO", 0);
                                     }
                                   },
                                 ),
@@ -345,7 +318,7 @@ class _ProfileState extends State<Profile> {
                       child: Row(
                         children: [
                           Text(
-                            'All Posts',
+                            'Publicaciones',
                             style: TextStyle(fontWeight: FontWeight.w900),
                           ),
                           const Spacer(),
@@ -411,7 +384,7 @@ class _ProfileState extends State<Profile> {
     bool isMe = widget.profileId == firebaseAuth.currentUser!.uid;
     if (isMe) {
       return buildButton(
-          text: "Edit Profile",
+          text: "Editar Perfil",
           function: () {
             Navigator.of(context).push(
               CupertinoPageRoute(
@@ -430,7 +403,7 @@ class _ProfileState extends State<Profile> {
       //if you are not following the user then "follow"
     } else if (!isFollowing) {
       return buildButton(
-        text: "Follow",
+        text: "Agregar",
         function: handleFollow,
       );
     }

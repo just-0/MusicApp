@@ -37,7 +37,7 @@ class ActivityStreamWrapper extends StatelessWidget {
                   child: Center(
                     child: Padding(
                       padding: const EdgeInsets.only(top: 250.0),
-                      child: Text('No Recent Activities'),
+                      child: Text('No hay nada por aquí'),
                     ),
                   ),
                 )

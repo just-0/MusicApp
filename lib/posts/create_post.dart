@@ -41,7 +41,7 @@ class _CreatePostState extends State<CreatePost> {
                 Navigator.pop(context);
               },
             ),
-            title: Text('WOOBLE'.toUpperCase()),
+            title: Text('ChiveroApp'.toUpperCase()),
             centerTitle: true,
             actions: [
               GestureDetector(
@@ -116,7 +116,7 @@ class _CreatePostState extends State<CreatePost> {
                       : viewModel.mediaUrl == null
                           ? Center(
                               child: Text(
-                                'Upload a Photo',
+                                'Subir una Foto',
                                 style: TextStyle(
                                   color:
                                       Theme.of(context).colorScheme.secondary,
@@ -133,7 +133,7 @@ class _CreatePostState extends State<CreatePost> {
               ),
               SizedBox(height: 20.0),
               Text(
-                'Post Caption'.toUpperCase(),
+                'Título de la Publicación'.toUpperCase(),
                 style: TextStyle(
                   fontSize: 15.0,
                   fontWeight: FontWeight.w600,
@@ -142,7 +142,7 @@ class _CreatePostState extends State<CreatePost> {
               TextFormField(
                 initialValue: viewModel.description,
                 decoration: InputDecoration(
-                  hintText: 'Eg. This is very beautiful place!',
+                  hintText: 'Canción 2.',
                   focusedBorder: UnderlineInputBorder(),
                 ),
                 maxLines: null,
@@ -150,7 +150,7 @@ class _CreatePostState extends State<CreatePost> {
               ),
               SizedBox(height: 20.0),
               Text(
-                'Location'.toUpperCase(),
+                'Ubicación'.toUpperCase(),
                 style: TextStyle(
                   fontSize: 15.0,
                   fontWeight: FontWeight.w600,
@@ -164,7 +164,7 @@ class _CreatePostState extends State<CreatePost> {
                     controller: viewModel.locationTEC,
                     decoration: InputDecoration(
                       contentPadding: EdgeInsets.all(0.0),
-                      hintText: 'United States,Los Angeles!',
+                      hintText: 'Arequipa/Perú',
                       focusedBorder: UnderlineInputBorder(),
                     ),
                     maxLines: null,
@@ -172,7 +172,7 @@ class _CreatePostState extends State<CreatePost> {
                   ),
                 ),
                 trailing: IconButton(
-                  tooltip: "Use your current location",
+                  tooltip: "Usa tu ubicación actual",
                   icon: Icon(
                     CupertinoIcons.map_pin_ellipse,
                     size: 25.0,
@@ -181,6 +181,22 @@ class _CreatePostState extends State<CreatePost> {
                   color: Theme.of(context).colorScheme.secondary,
                   onPressed: () => viewModel.getLocation(),
                 ),
+              ),
+              Text(
+                'Descripción de la publicación'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextFormField(
+                initialValue: viewModel.description,
+                decoration: InputDecoration(
+                  hintText: 'Una historia de ...',
+                  focusedBorder: UnderlineInputBorder(),
+                ),
+                maxLines: null,
+                onChanged: (val) => viewModel.setDescription(val),
               ),
             ],
           ),

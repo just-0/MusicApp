@@ -36,7 +36,7 @@ class _EditProfileState extends State<EditProfile> {
         key: viewModel.scaffoldKey,
         appBar: AppBar(
           centerTitle: true,
-          title: Text("Edit Profile"),
+          title: Text("Editar Perfil"),
           actions: [
             Center(
               child: Padding(

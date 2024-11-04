@@ -147,7 +147,7 @@ class _ConversationState extends State<Conversation> {
                               contentPadding: EdgeInsets.all(10.0),
                               enabledBorder: InputBorder.none,
                               border: InputBorder.none,
-                              hintText: "Type your message",
+                              hintText: "Escribe un mensaje...",
                               hintStyle: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme

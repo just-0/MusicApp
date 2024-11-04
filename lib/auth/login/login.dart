@@ -40,7 +40,7 @@ class _LoginState extends State<Login> {
             SizedBox(height: 10.0),
             Center(
               child: Text(
-                'Welcome back!',
+                '¡Bienvenido de vuelta!',
                 style: TextStyle(
                   fontSize: 23.0,
                   fontWeight: FontWeight.w900,
@@ -49,7 +49,7 @@ class _LoginState extends State<Login> {
             ),
             Center(
               child: Text(
-                'Log into your account and get started!',
+                'Inicia Sesión en tu cuenta',
                 style: TextStyle(
                   fontSize: 12.0,
                   fontWeight: FontWeight.w300,
@@ -63,7 +63,7 @@ class _LoginState extends State<Login> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Don\'t have an account?'),
+                Text('¿No tiene una cuenta?'),
                 SizedBox(width: 5.0),
                 GestureDetector(
                   onTap: () {
@@ -74,7 +74,7 @@ class _LoginState extends State<Login> {
                     );
                   },
                   child: Text(
-                    'Sign Up',
+                    'Registrarse',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.secondary,
@@ -98,7 +98,7 @@ class _LoginState extends State<Login> {
           TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.mail_outline,
-            hintText: "Email",
+            hintText: "Correo Electrónico",
             textInputAction: TextInputAction.next,
             validateFunction: Validations.validateEmail,
             onSaved: (String val) {
@@ -112,7 +112,7 @@ class _LoginState extends State<Login> {
             enabled: !viewModel.loading,
             prefix: Ionicons.lock_closed_outline,
             suffix: Ionicons.eye_outline,
-            hintText: "Password",
+            hintText: "Contraseña",
             textInputAction: TextInputAction.done,
             validateFunction: Validations.validatePassword,
             submitAction: () => viewModel.login(context),
@@ -129,12 +129,12 @@ class _LoginState extends State<Login> {
               child: InkWell(
                 onTap: () => viewModel.forgotPassword(context),
                 child: Container(
-                  width: 130,
+                  width: 190,
                   height: 40,
                   child: Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      'Forgot Password?',
+                      '¿Olvidó la contrarseña?',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                       ),
@@ -161,7 +161,7 @@ class _LoginState extends State<Login> {
               ),
               // highlightElevation: 4.0,
               child: Text(
-                'Log in'.toUpperCase(),
+                'Iniciar Sesión'.toUpperCase(),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12.0,

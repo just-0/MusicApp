@@ -41,47 +41,47 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyCVyGUMtC76XFnO1S4dBSjiKzzR0-E15ww',
-    appId: '1:527081854620:web:c38880682dc71bdc6bbf59',
-    messagingSenderId: '527081854620',
-    projectId: 'chivero-c416b',
-    authDomain: 'chivero-c416b.firebaseapp.com',
-    storageBucket: 'chivero-c416b.firebasestorage.app',
+    apiKey: 'AIzaSyBTgxP_7sWXb2XgaiRO9CrSpJGPT8of5yA',
+    appId: '1:579406671160:web:034e23d4ad87e1fd23a5cd',
+    messagingSenderId: '579406671160',
+    projectId: 'chivero-7278c',
+    authDomain: 'chivero-7278c.firebaseapp.com',
+    storageBucket: 'chivero-7278c.firebasestorage.app',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBBoMI-5IIYctZsqyXlWdxm3h7hsaDzC3Y',
-    appId: '1:527081854620:android:4f75390a8a19cba26bbf59',
-    messagingSenderId: '527081854620',
-    projectId: 'chivero-c416b',
-    storageBucket: 'chivero-c416b.firebasestorage.app',
+    apiKey: 'AIzaSyCp5m4AhVQYVnMXaZVbvzQGlT0aKMpFW9s',
+    appId: '1:579406671160:android:93874fc521625f4723a5cd',
+    messagingSenderId: '579406671160',
+    projectId: 'chivero-7278c',
+    storageBucket: 'chivero-7278c.firebasestorage.app',
   );
 
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyCPtlMPaa3z6CeQ48GF9E3fOqq8AVRKRUo',
-    appId: '1:527081854620:ios:87672cc35d4448926bbf59',
-    messagingSenderId: '527081854620',
-    projectId: 'chivero-c416b',
-    storageBucket: 'chivero-c416b.firebasestorage.app',
+    apiKey: 'AIzaSyAxZAm-AAUhLshbX23w2JZvi_7tffHkmPo',
+    appId: '1:579406671160:ios:1160581a2525759623a5cd',
+    messagingSenderId: '579406671160',
+    projectId: 'chivero-7278c',
+    storageBucket: 'chivero-7278c.firebasestorage.app',
     iosBundleId: 'com.example.chivero',
   );
 
   static const FirebaseOptions macos = FirebaseOptions(
-    apiKey: 'AIzaSyCPtlMPaa3z6CeQ48GF9E3fOqq8AVRKRUo',
-    appId: '1:527081854620:ios:87672cc35d4448926bbf59',
-    messagingSenderId: '527081854620',
-    projectId: 'chivero-c416b',
-    storageBucket: 'chivero-c416b.firebasestorage.app',
+    apiKey: 'AIzaSyAxZAm-AAUhLshbX23w2JZvi_7tffHkmPo',
+    appId: '1:579406671160:ios:1160581a2525759623a5cd',
+    messagingSenderId: '579406671160',
+    projectId: 'chivero-7278c',
+    storageBucket: 'chivero-7278c.firebasestorage.app',
     iosBundleId: 'com.example.chivero',
   );
 
   static const FirebaseOptions windows = FirebaseOptions(
-    apiKey: 'AIzaSyCVyGUMtC76XFnO1S4dBSjiKzzR0-E15ww',
-    appId: '1:527081854620:web:7304dd64a27500ba6bbf59',
-    messagingSenderId: '527081854620',
-    projectId: 'chivero-c416b',
-    authDomain: 'chivero-c416b.firebaseapp.com',
-    storageBucket: 'chivero-c416b.firebasestorage.app',
+    apiKey: 'AIzaSyBTgxP_7sWXb2XgaiRO9CrSpJGPT8of5yA',
+    appId: '1:579406671160:web:ab45be0b2eae1fc523a5cd',
+    messagingSenderId: '579406671160',
+    projectId: 'chivero-7278c',
+    authDomain: 'chivero-7278c.firebaseapp.com',
+    storageBucket: 'chivero-7278c.firebasestorage.app',
   );
 
 }

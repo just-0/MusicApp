@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "527081854620",
-    "project_id": "chivero-c416b",
-    "storage_bucket": "chivero-c416b.firebasestorage.app"
+    "project_number": "579406671160",
+    "project_id": "chivero-7278c",
+    "storage_bucket": "chivero-7278c.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:527081854620:android:4f75390a8a19cba26bbf59",
+        "mobilesdk_app_id": "1:579406671160:android:93874fc521625f4723a5cd",
         "android_client_info": {
           "package_name": "com.chivero.social"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBBoMI-5IIYctZsqyXlWdxm3h7hsaDzC3Y"
+          "current_key": "AIzaSyCp5m4AhVQYVnMXaZVbvzQGlT0aKMpFW9s"
         }
       ],
       "services": {

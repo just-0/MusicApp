@@ -56,7 +56,7 @@ class EditProfileViewModel extends ChangeNotifier {
       validate = true;
       notifyListeners();
       showInSnackBar(
-          'Please fix the errors in red before submitting.', context);
+          'Por favor arreglar las casillas en rojo.', context);
     } else {
       try {
         loading = true;

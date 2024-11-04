@@ -136,7 +136,7 @@ class _SearchState extends State<Search> with AutomaticKeepAliveClientMixin {
                 // contentPadding: EdgeInsets.only(bottom: 10.0, left: 10.0),
                 border: InputBorder.none,
                 counterText: '',
-                hintText: 'Search...',
+                hintText: 'Buscar...',
                 hintStyle: TextStyle(
                   fontSize: 13.0,
                 ),
@@ -152,7 +152,7 @@ class _SearchState extends State<Search> with AutomaticKeepAliveClientMixin {
     if (!loading) {
       if (filteredUsers.isEmpty) {
         return Center(
-          child: Text("No User Found",
+          child: Text("No se encontró usuarios",
               style: TextStyle(fontWeight: FontWeight.bold),),
         );
       } else {
@@ -254,7 +254,7 @@ class _SearchState extends State<Search> with AutomaticKeepAliveClientMixin {
                         child: Padding(
                           padding: const EdgeInsets.all(5.0),
                           child: Text(
-                            'Message',
+                            'Mensaje',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 12.0,

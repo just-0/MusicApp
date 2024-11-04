@@ -29,7 +29,7 @@ class _RegisterState extends State<Register> {
           children: [
             SizedBox(height: MediaQuery.of(context).size.height / 10),
             Text(
-              'Welcome to Wooble\nCreate a new account and connect with friends',
+              'Bienvenido a ChiveroApp!!!\nLa aplicación para encontrar músicos',
               style: GoogleFonts.nunitoSans(
                 fontWeight: FontWeight.bold,
                 fontSize: 25.0,
@@ -42,12 +42,12 @@ class _RegisterState extends State<Register> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  'Already have an account  ',
+                  '¿Ya tiene una cuenta?  '  ,
                 ),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Text(
-                    'Login',
+                    'Iniciar Sesión',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: Theme.of(context).colorScheme.secondary,
@@ -71,7 +71,7 @@ class _RegisterState extends State<Register> {
           TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.person_outline,
-            hintText: "Username",
+            hintText: "Nombre de Usuario",
             textInputAction: TextInputAction.next,
             validateFunction: Validations.validateName,
             onSaved: (String val) {
@@ -84,7 +84,7 @@ class _RegisterState extends State<Register> {
           TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.mail_outline,
-            hintText: "Email",
+            hintText: "Correo Electrónico",
             textInputAction: TextInputAction.next,
             validateFunction: Validations.validateEmail,
             onSaved: (String val) {
@@ -97,7 +97,7 @@ class _RegisterState extends State<Register> {
           TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.pin_outline,
-            hintText: "Country",
+            hintText: "País",
             textInputAction: TextInputAction.next,
             validateFunction: Validations.validateName,
             onSaved: (String val) {
@@ -111,7 +111,7 @@ class _RegisterState extends State<Register> {
             enabled: !viewModel.loading,
             prefix: Ionicons.lock_closed_outline,
             suffix: Ionicons.eye_outline,
-            hintText: "Password",
+            hintText: "Contraseña",
             textInputAction: TextInputAction.next,
             validateFunction: Validations.validatePassword,
             obscureText: true,
@@ -125,7 +125,7 @@ class _RegisterState extends State<Register> {
           PasswordFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.lock_open_outline,
-            hintText: "Confirm Password",
+            hintText: "Confirmar Contraseña",
             textInputAction: TextInputAction.done,
             validateFunction: Validations.validatePassword,
             submitAction: () => viewModel.register(context),
@@ -150,7 +150,7 @@ class _RegisterState extends State<Register> {
                     Theme.of(context).colorScheme.secondary),
               ),
               child: Text(
-                'sign up'.toUpperCase(),
+                'Registrarse'.toUpperCase(),
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 12.0,

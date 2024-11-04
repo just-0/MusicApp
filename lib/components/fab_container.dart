@@ -76,7 +76,7 @@ class FabContainer extends StatelessWidget {
                   CupertinoIcons.camera_on_rectangle,
                   size: 25.0,
                 ),
-                title: Text('Make a post'),
+                title: Text('Crear Publicación'),
                 onTap: () {
                   Navigator.pop(context);
                   Navigator.of(context).push(
@@ -91,7 +91,7 @@ class FabContainer extends StatelessWidget {
                   CupertinoIcons.camera_on_rectangle,
                   size: 25.0,
                 ),
-                title: Text('Add to story'),
+                title: Text('Crear Historia'),
                 onTap: () async {
                   // Navigator.pop(context);
                   await viewModel.pickImage(context: context);

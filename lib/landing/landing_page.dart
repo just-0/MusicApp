@@ -22,7 +22,7 @@ class _LandingState extends State<Landing> {
               child: Padding(
                 padding: const EdgeInsets.only(left: 10.0),
                 child: Image.asset(
-                  'assets/images/new1.png',
+                  'assets/images/login.png',
                   height: 200.0,
                   width: 200.0,
                   fit: BoxFit.cover,
@@ -30,7 +30,7 @@ class _LandingState extends State<Landing> {
               ),
             ),
             Text(
-              'WOOBLE',
+              'ChiveroApp',
               style: TextStyle(
                 fontSize: 22.0,
                 fontWeight: FontWeight.w900,
@@ -72,7 +72,7 @@ class _LandingState extends State<Landing> {
                   ),
                   child: Center(
                     child: Text(
-                      'LOGIN',
+                      'Iniciar Sesión',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
@@ -106,7 +106,7 @@ class _LandingState extends State<Landing> {
                   ),
                   child: Center(
                     child: Text(
-                      'SIGN UP',
+                      'Registrarse',
                       style: TextStyle(
                         fontWeight: FontWeight.w900,
                         color: Colors.white,
