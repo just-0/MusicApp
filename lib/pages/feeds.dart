@@ -15,54 +15,58 @@ class Feeds extends StatefulWidget {
   _FeedsState createState() => _FeedsState();
 }
 
-class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin{
+class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin {
   final GlobalKey<ScaffoldState> scaffoldKey = GlobalKey<ScaffoldState>();
-
   int page = 5;
   bool loadingMore = false;
   ScrollController scrollController = ScrollController();
 
+  List<String> friendsIds = []; // Aquí guardaremos los IDs de los amigos
+
   @override
   void initState() {
+    super.initState();
+    fetchFriends(); // Llamada para obtener la lista de amigos
     scrollController.addListener(() async {
-      if (scrollController.position.pixels ==
-          scrollController.position.maxScrollExtent) {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
         setState(() {
-          page = page + 5;
+          page += 5;
           loadingMore = true;
         });
       }
     });
-    super.initState();
+  }
+
+  Future<void> fetchFriends() async {
+    final String currentUserId = firebaseAuth.currentUser!.uid;
+    print("currentId: ");
+    print(currentUserId);
+
+    // Obtén los IDs de los amigos desde la colección 'userFollowing'
+    var friendsSnapshot = await followingRef
+        .doc(currentUserId)
+        .collection('userFollowing')
+        .get();
+
+    setState(() {
+      friendsIds = friendsSnapshot.docs.map((doc) => doc.id).toList();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    print('>>>');
+    super.build(context);
     return Scaffold(
       key: scaffoldKey,
       appBar: AppBar(
         automaticallyImplyLeading: false,
-        title: Text(
-          Constants.appName,
-          style: TextStyle(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        title: Text(Constants.appName, style: TextStyle(fontWeight: FontWeight.w900)),
         centerTitle: true,
         actions: [
           IconButton(
-            icon: Icon(
-              Ionicons.chatbubble_ellipses,
-              size: 30.0,
-            ),
+            icon: Icon(Ionicons.chatbubble_ellipses, size: 30.0),
             onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                  builder: (_) => Chats(),
-                ),
-              );
+              Navigator.push(context, CupertinoPageRoute(builder: (_) => Chats()));
             },
           ),
           SizedBox(width: 20.0),
@@ -70,53 +74,40 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin{
       ),
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.secondary,
-        onRefresh: () =>
-            postRef.orderBy('timestamp', descending: true).limit(page).get(),
+        onRefresh: fetchFriends,
         child: SingleChildScrollView(
-          // controller: scrollController,
-          physics: NeverScrollableScrollPhysics(),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               StoryWidget(),
               Container(
                 height: MediaQuery.of(context).size.height,
-                child: FutureBuilder(
-                  future: postRef
-                      .orderBy('timestamp', descending: true)
-                      .limit(page)
-                      .get(),
-                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                    if (snapshot.hasData) {
-                      var snap = snapshot.data;
-                      List docs = snap!.docs;
-                      return ListView.builder(
-  physics: AlwaysScrollableScrollPhysics(),
-  controller: scrollController,
-  itemCount: docs.length,
-  shrinkWrap: true,
-  itemBuilder: (context, index) {
-    PostModel posts = PostModel.fromJson(docs[index].data());
-    return Padding(
-      padding: const EdgeInsets.all(10.0),
-      child: UserPost(post: posts),
-    );
-  },
-);
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
+                child: FutureBuilder<List<PostModel>>(
+                  future: getFriendsPosts(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
                       return circularProgress(context);
-                    } else
+                    } else if (snapshot.hasData) {
+                      List<PostModel> posts = snapshot.data!;
+                      return ListView.builder(
+                        physics: AlwaysScrollableScrollPhysics(),
+                        controller: scrollController,
+                        itemCount: posts.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: UserPost(post: posts[index]),
+                          );
+                        },
+                      );
+                    } else {
                       return Center(
                         child: Text(
                           'No Feeds',
-                          style: TextStyle(
-                            fontSize: 26.0,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
                         ),
                       );
+                    }
                   },
                 ),
               ),
@@ -125,6 +116,19 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin{
         ),
       ),
     );
+  }
+
+  Future<List<PostModel>> getFriendsPosts() async {
+    if (friendsIds.isEmpty) return [];
+
+    var postsSnapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('ownerId', whereIn: friendsIds)
+        .orderBy('timestamp', descending: true)
+        .limit(page)
+        .get();
+
+    return postsSnapshot.docs.map((doc) => PostModel.fromJson(doc.data())).toList();
   }
 
   @override

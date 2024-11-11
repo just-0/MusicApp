@@ -99,9 +99,6 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
         
           onTap: () {},
           borderRadius: BorderRadius.circular(10.0),
-          child: Container(
-            constraints: BoxConstraints(
-            minHeight: MediaQuery.of(context).size.height*2,),
             child: OpenContainer(
 
             transitionType: ContainerTransitionType.fadeThrough,
@@ -270,7 +267,6 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
               );
             },
           ),
-        ),
       ),
     );
   }

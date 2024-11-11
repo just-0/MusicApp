@@ -10,7 +10,7 @@ final Uuid uuid = Uuid();
 
 // Collection refs
 CollectionReference usersRef = firestore.collection('users');
-CollectionReference chatRef = firestore.collection("chats");
+CollectionReference chatRef = firestore.collection('chats');
 CollectionReference postRef = firestore.collection('posts');
 CollectionReference storyRef = firestore.collection('posts');
 CollectionReference commentRef = firestore.collection('comments');
