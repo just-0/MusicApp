@@ -10,6 +10,7 @@ class RegisterViewModel extends ChangeNotifier {
   bool validate = false;
   bool loading = false;
   String? username, email, country, password, cPassword;
+  String? userType; // Nueva variable para el tipo de usuario
   FocusNode usernameFN = FocusNode();
   FocusNode emailFN = FocusNode();
   FocusNode countryFN = FocusNode();
@@ -35,6 +36,7 @@ class RegisterViewModel extends ChangeNotifier {
             email: email,
             password: password,
             country: country,
+            userType: userType, // Pasar el tipo de usuario al servicio de autenticación
           );
           print(success);
           if (success) {
@@ -81,6 +83,12 @@ class RegisterViewModel extends ChangeNotifier {
 
   setCountry(val) {
     country = val;
+    notifyListeners();
+  }
+
+  // Implementación de setUserType
+  setUserType(val) {
+    userType = val;
     notifyListeners();
   }
 
