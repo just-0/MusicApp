@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ionicons/ionicons.dart';
@@ -16,6 +15,8 @@ class Register extends StatefulWidget {
 }
 
 class _RegisterState extends State<Register> {
+  String _userType = 'Musico'; // Valor predeterminado para el tipo de usuario
+
   @override
   Widget build(BuildContext context) {
     RegisterViewModel viewModel = Provider.of<RegisterViewModel>(context);
@@ -41,9 +42,7 @@ class _RegisterState extends State<Register> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text(
-                  '¿Ya tiene una cuenta?  '  ,
-                ),
+                Text('¿Ya tiene una cuenta?  '),
                 GestureDetector(
                   onTap: () => Navigator.pop(context),
                   child: Text(
@@ -68,6 +67,33 @@ class _RegisterState extends State<Register> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: [
+           // Nuevo campo de selección para el tipo de usuario
+          DropdownButtonFormField<String>(
+            value: _userType,
+            items: [
+              DropdownMenuItem(
+                child: Text("Músico"),
+                value: 'Musico',
+              ),
+              DropdownMenuItem(
+                child: Text("Contratista"),
+                value: 'Contratista',
+              ),
+            ],
+            onChanged: (String? newValue) {
+              setState(() {
+                _userType = newValue!;
+              });
+            },
+            onSaved: (String? value) {
+              viewModel.setUserType(value ?? 'Musico');
+            },
+            decoration: InputDecoration(
+              prefixIcon: Icon(Ionicons.person_outline),
+              hintText: "Tipo de usuario",
+            ),
+          ),
+          SizedBox(height: 20.0),
           TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.person_outline,
@@ -135,6 +161,7 @@ class _RegisterState extends State<Register> {
             },
             focusNode: viewModel.cPassFN,
           ),
+          // SizedBox(height: 20.0),
           SizedBox(height: 25.0),
           Container(
             height: 45.0,

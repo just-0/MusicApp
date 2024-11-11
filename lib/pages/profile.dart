@@ -1,4 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chivero/auth/login/login.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
@@ -71,7 +72,7 @@ class _ProfileState extends State<Profile> {
                         await firebaseAuth.signOut();
                         Navigator.of(context).push(
                           CupertinoPageRoute(
-                            builder: (_) => Register(),
+                            builder: (_) => Login(),
                           ),
                         );
                       },
@@ -402,11 +403,31 @@ class _ProfileState extends State<Profile> {
       );
       //if you are not following the user then "follow"
     } else if (!isFollowing) {
-      return buildButton(
-        text: "Agregar",
-        function: handleFollow,
-      );
-    }
+      return FutureBuilder<DocumentSnapshot>(
+      future: FirebaseFirestore.instance
+          .collection('users')
+          .doc(widget.profileId)
+          .get(), // Obtiene el documento de usuario una sola vez
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return CircularProgressIndicator(); // Muestra un indicador de carga mientras se obtiene el documento
+        } else if (snapshot.hasError) {
+          return Text("Error: ${snapshot.error}"); // Muestra un error si ocurre alguno
+        } else if (snapshot.hasData) {
+          DocumentSnapshot userDoc = snapshot.data!; 
+          String? userType = userDoc['userType'];
+          final buttonText = userType == 'Musico' ? "Agregar Músico" : "Agregar Contratista";
+          
+          return buildButton(
+            text: buttonText,
+            function: handleFollow,
+          );
+        } else {
+          return Text("No data available");
+        }
+      },
+    );
+  }
   }
 
   buildButton({String? text, Function()? function}) {

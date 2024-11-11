@@ -4,32 +4,38 @@ import 'package:chivero/utils/firebase.dart';
 
 class AuthService {
   User getCurrentUser() {
-    User user = firebaseAuth.currentUser!;
-    return user;
+    return firebaseAuth.currentUser!;
   }
 
-//create a firebase user
-  Future<bool> createUser(
-      {String? name,
-      User? user,
-      String? email,
-      String? country,
-      String? password}) async {
+  // Crear un usuario en Firebase con tipo de usuario
+  Future<bool> createUser({
+    String? name,
+    User? user,
+    String? email,
+    String? country,
+    String? password,
+    String? userType, // Nuevo parámetro userType
+  }) async {
     var res = await firebaseAuth.createUserWithEmailAndPassword(
       email: '$email',
       password: '$password',
     );
     if (res.user != null) {
-      await saveUserToFirestore(name!, res.user!, email!, country!);
+      await saveUserToFirestore(name!, res.user!, email!, country!, userType!);
       return true;
     } else {
       return false;
     }
   }
 
-//this will save the details inputted by the user to firestore.
+  // Guardar los detalles del usuario en Firestore, incluyendo userType
   saveUserToFirestore(
-      String name, User user, String email, String country) async {
+    String name,
+    User user,
+    String email,
+    String country,
+    String userType, // Nuevo parámetro userType
+  ) async {
     await usersRef.doc(user.uid).set({
       'username': name,
       'email': email,
@@ -39,16 +45,16 @@ class AuthService {
       'country': country,
       'photoUrl': user.photoURL ?? '',
       'gender': '',
+      'userType': userType, // Almacena userType en Firestore
     });
   }
 
-//function to login a user with his email and password
+  // Función para iniciar sesión
   Future<bool> loginUser({String? email, String? password}) async {
     var res = await firebaseAuth.signInWithEmailAndPassword(
       email: '$email',
       password: '$password',
     );
-
     if (res.user != null) {
       return true;
     } else {
@@ -60,11 +66,13 @@ class AuthService {
     await firebaseAuth.sendPasswordResetEmail(email: email);
   }
 
-  logOut() async {
+
+  Future<void> logOut() async {
     await firebaseAuth.signOut();
   }
 
   String handleFirebaseAuthError(String e) {
+    // Manejo de errores de autenticación
     if (e.contains("ERROR_WEAK_PASSWORD")) {
       return "Password is too weak";
     } else if (e.contains("invalid-email")) {
