@@ -92,18 +92,18 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin{
                       var snap = snapshot.data;
                       List docs = snap!.docs;
                       return ListView.builder(
-                        controller: scrollController,
-                        itemCount: docs.length,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-                          PostModel posts =
-                              PostModel.fromJson(docs[index].data());
-                          return Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: UserPost(post: posts),
-                          );
-                        },
-                      );
+  physics: AlwaysScrollableScrollPhysics(),
+  controller: scrollController,
+  itemCount: docs.length,
+  shrinkWrap: true,
+  itemBuilder: (context, index) {
+    PostModel posts = PostModel.fromJson(docs[index].data());
+    return Padding(
+      padding: const EdgeInsets.all(10.0),
+      child: UserPost(post: posts),
+    );
+  },
+);
                     } else if (snapshot.connectionState ==
                         ConnectionState.waiting) {
                       return circularProgress(context);

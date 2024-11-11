@@ -26,28 +26,50 @@ class UserPost extends StatefulWidget {
   _UserPostState createState() => _UserPostState();
 }
 
-class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin{
+class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
   final PostService services = PostService();
   final AudioPlayer _audioPlayer = AudioPlayer();
   late AnimationController _animationController;
   bool isPlaying = false;
-
+  
   void toggleAudio() async {
+  if(mounted) {
     if (isPlaying) {
       await _audioPlayer.pause();
       _animationController.stop(); // Detener animación al pausar
-      setState(() {
-        isPlaying = false;
-      });
+      if(mounted) {
+        setState(() {
+          isPlaying = false;
+        });
+      }
     } else {
       await _audioPlayer.play(UrlSource(widget.post?.audioUrl ?? ''));
       _animationController.forward(); // Iniciar animación al reproducir
-      setState(() {
-        isPlaying = true;
-      });
+      if(mounted) {
+        setState(() {
+          isPlaying = true;
+        });
+      }
     }
   }
-  
+}
+
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.paused) {
+      if (isPlaying) {
+        _audioPlayer.pause();
+        _animationController.stop();
+        if (mounted) {
+          setState(() {
+            isPlaying = false;
+          });
+        }
+      }
+    }
+  }
+
   @override
   void dispose() {
     _audioPlayer.dispose();
@@ -58,186 +80,197 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
   @override
   void initState() {
     super.initState();
-    // Inicializar el AnimationController para la rotación
+    WidgetsBinding.instance!.addObserver(this);
+
     _animationController = AnimationController(
       duration: Duration(seconds: 10),
       vsync: this,
     )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _animationController.repeat(); // Repite la rotación
-        }
-      });
+      if (status == AnimationStatus.completed) {
+        _animationController.repeat();
+      }
+    });
   }
   @override
   Widget build(BuildContext context) {
-    return CustomCard(
-      onTap: () {},
-      borderRadius: BorderRadius.circular(10.0),
-      child: OpenContainer(
-        transitionType: ContainerTransitionType.fadeThrough,
-        openBuilder: (BuildContext context, VoidCallback _) {
-          return ViewImage(post: widget.post);
-        },
-        closedElevation: 0.0,
-        closedShape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(
-            Radius.circular(10.0),
-          ),
-        ),
-        onClosed: (v) {},
-        closedColor: Theme.of(context).cardColor,
-        closedBuilder: (BuildContext context, VoidCallback openContainer) {
-          return Stack(
-            children: [
-              Column(
+    return SingleChildScrollView(
+      physics: BouncingScrollPhysics(),
+      child: CustomCard(
+        
+          onTap: () {},
+          borderRadius: BorderRadius.circular(10.0),
+          child: Container(
+            constraints: BoxConstraints(
+            minHeight: MediaQuery.of(context).size.height*2,),
+            child: OpenContainer(
+
+            transitionType: ContainerTransitionType.fadeThrough,
+            openBuilder: (BuildContext context, VoidCallback _) {
+              return ViewImage(post: widget.post);
+            },
+            closedElevation: 0.0,
+            closedShape: const RoundedRectangleBorder(
+              borderRadius: BorderRadius.all(
+                Radius.circular(10.0),
+              ),
+            ),
+            onClosed: (v) {},
+            closedColor: Theme.of(context).cardColor,
+            closedBuilder: (BuildContext context, VoidCallback openContainer) {
+              return Stack(
                 children: [
-                   GestureDetector(
-                    onTap: toggleAudio,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Imagen con rotación
-                        RotationTransition(
-                          turns: _animationController,
-                          child: ClipOval(
-                            child: CustomImage(
-                              imageUrl: widget.post?.mediaUrl ?? '',
-                              height: 250.0, // 
-                              width: 250.0,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Icon(
-                          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                          size: isPlaying ? 0.0 : 100.0, // El tamaño es 0 cuando está reproduciendo
-                          color: Colors.black.withOpacity(0.6), // Cambiar la opacidad si se desea
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 3.0, vertical: 5.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left: 0.0),
-                          child: Row(
-                            children: [
-                              buildLikeButton(),
-                              SizedBox(width: 5.0),
-                              InkWell(
-                                borderRadius: BorderRadius.circular(10.0),
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    CupertinoPageRoute(
-                                      builder: (_) => Comments(post: widget.post),
-                                    ),
-                                  );
-                                },
-                                child: Icon(
-                                  CupertinoIcons.chat_bubble,
-                                  size: 25.0,
+                  Column(
+                    children: [
+                      SizedBox(height: 50),
+                      GestureDetector(
+                        onTap: toggleAudio,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            // Imagen con rotación
+                            RotationTransition(
+                              turns: _animationController,
+                              child: ClipOval(
+                                child: CustomImage(
+                                  imageUrl: widget.post?.mediaUrl ?? '',
+                                  height: 250.0, // 
+                                  width: 250.0,
+                                  fit: BoxFit.cover,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                            Icon(
+                              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                              size: isPlaying ? 0.0 : 100.0, // El tamaño es 0 cuando está reproduciendo
+                              color: Colors.black.withOpacity(0.6), // Cambiar la opacidad si se desea
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 5.0),
-                        Row(
+                      ),
+                      Padding(
+                        padding:
+                            EdgeInsets.symmetric(horizontal: 3.0, vertical: 5.0),
+                        child: Column(
                           mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Flexible(
-                              child: Padding(
-                                padding: const EdgeInsets.only(left: 0.0),
-                                child: StreamBuilder(
-                                  stream: likesRef
-                                      .where('postId', isEqualTo: widget.post!.postId)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 0.0),
+                              child: Row(
+                                children: [
+                                  buildLikeButton(),
+                                  SizedBox(width: 5.0),
+                                  InkWell(
+                                    borderRadius: BorderRadius.circular(10.0),
+                                    onTap: () {
+                                      Navigator.of(context).push(
+                                        CupertinoPageRoute(
+                                          builder: (_) => Comments(post: widget.post),
+                                        ),
+                                      );
+                                    },
+                                    child: Icon(
+                                      CupertinoIcons.chat_bubble,
+                                      size: 25.0,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 5.0),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Flexible(
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(left: 0.0),
+                                    child: StreamBuilder(
+                                      stream: likesRef
+                                          .where('postId', isEqualTo: widget.post!.postId)
+                                          .snapshots(),
+                                      builder: (context,
+                                          AsyncSnapshot<QuerySnapshot> snapshot) {
+                                        if (snapshot.hasData) {
+                                          QuerySnapshot snap = snapshot.data!;
+                                          List<DocumentSnapshot> docs = snap.docs;
+                                          return buildLikesCount(
+                                              context, docs.length ?? 0);
+                                        } else {
+                                          return buildLikesCount(context, 0);
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(width: 5.0),
+                                StreamBuilder(
+                                  stream: commentRef
+                                      .doc(widget.post!.postId!)
+                                      .collection("comments")
                                       .snapshots(),
                                   builder: (context,
                                       AsyncSnapshot<QuerySnapshot> snapshot) {
                                     if (snapshot.hasData) {
                                       QuerySnapshot snap = snapshot.data!;
                                       List<DocumentSnapshot> docs = snap.docs;
-                                      return buildLikesCount(
+                                      return buildCommentsCount(
                                           context, docs.length ?? 0);
                                     } else {
-                                      return buildLikesCount(context, 0);
+                                      return buildCommentsCount(context, 0);
                                     }
                                   },
                                 ),
+                              ],
+                            ),
+                            Visibility(
+                              visible: widget.post!.description != null &&
+                                  widget.post!.description.toString().isNotEmpty,
+                              child: Padding(
+                                padding: const EdgeInsets.only(left: 5.0, top: 3.0),
+                                child: Text(
+                                  '${widget.post?.description ?? ""}',
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).textTheme.bodySmall?.color,
+                                    fontSize: 15.0,
+                                  ),
+                                  maxLines: 2,
+                                ),
                               ),
                             ),
-                            SizedBox(width: 5.0),
-                            StreamBuilder(
-                              stream: commentRef
-                                  .doc(widget.post!.postId!)
-                                  .collection("comments")
-                                  .snapshots(),
-                              builder: (context,
-                                  AsyncSnapshot<QuerySnapshot> snapshot) {
-                                if (snapshot.hasData) {
-                                  QuerySnapshot snap = snapshot.data!;
-                                  List<DocumentSnapshot> docs = snap.docs;
-                                  return buildCommentsCount(
-                                      context, docs.length ?? 0);
-                                } else {
-                                  return buildCommentsCount(context, 0);
-                                }
-                              },
+                            SizedBox(height: 3.0),
+                            Padding(
+                              padding: const EdgeInsets.all(3.0),
+                              child: Text(
+                                timeago.format(widget.post!.timestamp!.toDate()),
+                                style: TextStyle(fontSize: 10.0),
+                              ),
                             ),
+                            // SizedBox(height: 5.0),
                           ],
                         ),
-                        Visibility(
-                          visible: widget.post!.description != null &&
-                              widget.post!.description.toString().isNotEmpty,
-                          child: Padding(
-                            padding: const EdgeInsets.only(left: 5.0, top: 3.0),
-                            child: Text(
-                              '${widget.post?.description ?? ""}',
-                              style: TextStyle(
-                                color:
-                                    Theme.of(context).textTheme.bodySmall?.color,
-                                fontSize: 15.0,
-                              ),
-                              maxLines: 2,
-                            ),
-                          ),
-                        ),
-                        SizedBox(height: 3.0),
-                        Padding(
-                          padding: const EdgeInsets.all(3.0),
-                          child: Text(
-                            timeago.format(widget.post!.timestamp!.toDate()),
-                            style: TextStyle(fontSize: 10.0),
-                          ),
-                        ),
-                        // SizedBox(height: 5.0),
-                      ],
-                    ),
-                  )
-                ],
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: IconButton(
-                  icon: Icon(
-                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                    size: 50.0,
-                    color: Colors.white.withOpacity(0.7),
+                      )
+                    ],
                   ),
-                  onPressed: toggleAudio,
-                ),
-              ),
-              buildUser(context),
-            ],
-          );
-        },
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: IconButton(
+                      icon: Icon(
+                        isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                        size: 50.0,
+                        color: Colors.white.withOpacity(0.7),
+                      ),
+                      onPressed: toggleAudio,
+                    ),
+                  ),
+                  buildUser(context),
+                ],
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -338,91 +371,79 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
   }
 
   buildUser(BuildContext context) {
-    bool isMe = currentUserId() == widget.post!.ownerId;
-    return StreamBuilder(
-      stream: usersRef.doc(widget.post!.ownerId).snapshots(),
-      builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-        if (snapshot.hasData) {
-          DocumentSnapshot snap = snapshot.data!;
-          UserModel user =
-              UserModel.fromJson(snap.data() as Map<String, dynamic>);
-          return Visibility(
-            visible: !isMe,
-            child: Align(
-              alignment: Alignment.topCenter,
-              child: Container(
-                height: 50.0,
-                decoration: BoxDecoration(
-                  color: Colors.white60,
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10.0),
-                    topRight: Radius.circular(10.0),
-                  ),
-                ),
-                child: GestureDetector(
-                  onTap: () => showProfile(context, profileId: user.id!),
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: 10.0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        user.photoUrl!.isEmpty
-                            ? CircleAvatar(
-                                radius: 20.0,
-                                backgroundColor:
-                                    Theme.of(context).colorScheme.secondary,
-                                child: Center(
-                                  child: Text(
-                                    '${user.username![0].toUpperCase()}',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 15.0,
-                                      fontWeight: FontWeight.w900,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : CircleAvatar(
-                                radius: 20.0,
-                                backgroundImage: CachedNetworkImageProvider(
-                                  '${user.photoUrl}',
-                                ),
-                              ),
-                        SizedBox(width: 5.0),
-                        Column(
-                          mainAxisSize: MainAxisSize.min,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              '${widget.post?.username ?? ""}',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                color: Colors.black,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              '${widget.post?.location ?? 'ChiveroApp'}',
-                              style: TextStyle(
-                                fontSize: 10.0,
-                                color: Color(0xff4D4D4D),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
+  bool isMe = currentUserId() == widget.post!.ownerId;
+  return StreamBuilder(
+    stream: usersRef.doc(widget.post!.ownerId).snapshots(),
+    builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+      if (snapshot.hasData) {
+        DocumentSnapshot snap = snapshot.data!;
+        UserModel user = UserModel.fromJson(snap.data() as Map<String, dynamic>);
+        return Align(
+          alignment: Alignment.topCenter,
+          child: Container(
+            height: 50.0,
+            decoration: BoxDecoration(
+              color: Colors.white60,
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(10.0),
+                topRight: Radius.circular(10.0),
               ),
             ),
-          );
-        } else {
-          return Container();
-        }
-      },
-    );
-  }
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  CircleAvatar(
+                    radius: 20.0,
+                    backgroundImage: user.photoUrl!.isEmpty
+                        ? null
+                        : CachedNetworkImageProvider(user.photoUrl!),
+                    backgroundColor: Theme.of(context).colorScheme.secondary,
+                    child: user.photoUrl!.isEmpty
+                        ? Text(
+                            '${user.username![0].toUpperCase()}',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 15.0,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          )
+                        : null,
+                  ),
+                  SizedBox(width: 5.0),
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '${user.username}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          color: Colors.black,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      Text(
+                        '${widget.post?.location ?? 'ChiveroApp'}',
+                        style: TextStyle(
+                          fontSize: 10.0,
+                          color: Color(0xff4D4D4D),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      } else {
+        return Container();
+      }
+    },
+  );
+}
 
   showProfile(BuildContext context, {String? profileId}) {
     Navigator.push(
