@@ -15,20 +15,59 @@ import 'package:chivero/screens/view_image.dart';
 import 'package:chivero/services/post_service.dart';
 import 'package:chivero/utils/firebase.dart';
 import 'package:timeago/timeago.dart' as timeago;
+import 'package:audioplayers/audioplayers.dart';
 
-class UserPost extends StatelessWidget {
+class UserPost extends StatefulWidget {
   final PostModel? post;
 
   UserPost({this.post});
 
-  final DateTime timestamp = DateTime.now();
+  @override
+  _UserPostState createState() => _UserPostState();
+}
 
-  currentUserId() {
-    return firebaseAuth.currentUser!.uid;
+class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin{
+  final PostService services = PostService();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  late AnimationController _animationController;
+  bool isPlaying = false;
+
+  void toggleAudio() async {
+    if (isPlaying) {
+      await _audioPlayer.pause();
+      _animationController.stop(); // Detener animación al pausar
+      setState(() {
+        isPlaying = false;
+      });
+    } else {
+      await _audioPlayer.play(UrlSource(widget.post?.audioUrl ?? ''));
+      _animationController.forward(); // Iniciar animación al reproducir
+      setState(() {
+        isPlaying = true;
+      });
+    }
+  }
+  
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    _animationController.dispose();
+    super.dispose();
   }
 
-  final PostService services = PostService();
-
+  @override
+  void initState() {
+    super.initState();
+    // Inicializar el AnimationController para la rotación
+    _animationController = AnimationController(
+      duration: Duration(seconds: 10),
+      vsync: this,
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _animationController.repeat(); // Repite la rotación
+        }
+      });
+  }
   @override
   Widget build(BuildContext context) {
     return CustomCard(
@@ -37,7 +76,7 @@ class UserPost extends StatelessWidget {
       child: OpenContainer(
         transitionType: ContainerTransitionType.fadeThrough,
         openBuilder: (BuildContext context, VoidCallback _) {
-          return ViewImage(post: post);
+          return ViewImage(post: widget.post);
         },
         closedElevation: 0.0,
         closedShape: const RoundedRectangleBorder(
@@ -52,16 +91,29 @@ class UserPost extends StatelessWidget {
             children: [
               Column(
                 children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(10.0),
-                      topRight: Radius.circular(10.0),
-                    ),
-                    child: CustomImage(
-                      imageUrl: post?.mediaUrl ?? '',
-                      height: 350.0,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
+                   GestureDetector(
+                    onTap: toggleAudio,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        // Imagen con rotación
+                        RotationTransition(
+                          turns: _animationController,
+                          child: ClipOval(
+                            child: CustomImage(
+                              imageUrl: widget.post?.mediaUrl ?? '',
+                              height: 250.0, // 
+                              width: 250.0,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                          size: isPlaying ? 0.0 : 100.0, // El tamaño es 0 cuando está reproduciendo
+                          color: Colors.black.withOpacity(0.6), // Cambiar la opacidad si se desea
+                        ),
+                      ],
                     ),
                   ),
                   Padding(
@@ -82,7 +134,7 @@ class UserPost extends StatelessWidget {
                                 onTap: () {
                                   Navigator.of(context).push(
                                     CupertinoPageRoute(
-                                      builder: (_) => Comments(post: post),
+                                      builder: (_) => Comments(post: widget.post),
                                     ),
                                   );
                                 },
@@ -104,7 +156,7 @@ class UserPost extends StatelessWidget {
                                 padding: const EdgeInsets.only(left: 0.0),
                                 child: StreamBuilder(
                                   stream: likesRef
-                                      .where('postId', isEqualTo: post!.postId)
+                                      .where('postId', isEqualTo: widget.post!.postId)
                                       .snapshots(),
                                   builder: (context,
                                       AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -123,7 +175,7 @@ class UserPost extends StatelessWidget {
                             SizedBox(width: 5.0),
                             StreamBuilder(
                               stream: commentRef
-                                  .doc(post!.postId!)
+                                  .doc(widget.post!.postId!)
                                   .collection("comments")
                                   .snapshots(),
                               builder: (context,
@@ -141,12 +193,12 @@ class UserPost extends StatelessWidget {
                           ],
                         ),
                         Visibility(
-                          visible: post!.description != null &&
-                              post!.description.toString().isNotEmpty,
+                          visible: widget.post!.description != null &&
+                              widget.post!.description.toString().isNotEmpty,
                           child: Padding(
                             padding: const EdgeInsets.only(left: 5.0, top: 3.0),
                             child: Text(
-                              '${post?.description ?? ""}',
+                              '${widget.post?.description ?? ""}',
                               style: TextStyle(
                                 color:
                                     Theme.of(context).textTheme.bodySmall?.color,
@@ -160,7 +212,7 @@ class UserPost extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.all(3.0),
                           child: Text(
-                            timeago.format(post!.timestamp!.toDate()),
+                            timeago.format(widget.post!.timestamp!.toDate()),
                             style: TextStyle(fontSize: 10.0),
                           ),
                         ),
@@ -169,6 +221,18 @@ class UserPost extends StatelessWidget {
                     ),
                   )
                 ],
+              ),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: IconButton(
+                  icon: Icon(
+                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                    size: 50.0,
+                    color: Colors.white.withOpacity(0.7),
+                  ),
+                  onPressed: toggleAudio,
+                ),
               ),
               buildUser(context),
             ],
@@ -181,43 +245,17 @@ class UserPost extends StatelessWidget {
   buildLikeButton() {
     return StreamBuilder(
       stream: likesRef
-          .where('postId', isEqualTo: post!.postId)
+          .where('postId', isEqualTo: widget.post!.postId)
           .where('userId', isEqualTo: currentUserId())
           .snapshots(),
       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
         if (snapshot.hasData) {
           List<QueryDocumentSnapshot> docs = snapshot.data?.docs ?? [];
-
-          ///replaced this with an animated like button
-          // return IconButton(
-          //   onPressed: () {
-          //     if (docs.isEmpty) {
-          //       likesRef.add({
-          //         'userId': currentUserId(),
-          //         'postId': post!.postId,
-          //         'dateCreated': Timestamp.now(),
-          //       });
-          //       addLikesToNotification();
-          //     } else {
-          //       likesRef.doc(docs[0].id).delete();
-          //       services.removeLikeFromNotification(
-          //           post!.ownerId!, post!.postId!, currentUserId());
-          //     }
-          //   },
-          //   icon: docs.isEmpty
-          //       ? Icon(
-          //           CupertinoIcons.heart,
-          //         )
-          //       : Icon(
-          //           CupertinoIcons.heart_fill,
-          //           color: Colors.red,
-          //         ),
-          // );
           Future<bool> onLikeButtonTapped(bool isLiked) async {
             if (docs.isEmpty) {
               likesRef.add({
                 'userId': currentUserId(),
-                'postId': post!.postId,
+                'postId': widget.post!.postId,
                 'dateCreated': Timestamp.now(),
               });
               addLikesToNotification();
@@ -225,7 +263,7 @@ class UserPost extends StatelessWidget {
             } else {
               likesRef.doc(docs[0].id).delete();
               services.removeLikeFromNotification(
-                  post!.ownerId!, post!.postId!, currentUserId());
+                  widget.post!.ownerId!, widget.post!.postId!, currentUserId());
               return isLiked;
             }
           }
@@ -259,7 +297,7 @@ class UserPost extends StatelessWidget {
   }
 
   addLikesToNotification() async {
-    bool isNotMe = currentUserId() != post!.ownerId;
+    bool isNotMe = currentUserId() != widget.post!.ownerId;
 
     if (isNotMe) {
       DocumentSnapshot doc = await usersRef.doc(currentUserId()).get();
@@ -268,9 +306,9 @@ class UserPost extends StatelessWidget {
         "like",
         user!.username!,
         currentUserId(),
-        post!.postId!,
-        post!.mediaUrl!,
-        post!.ownerId!,
+        widget.post!.postId!,
+        widget.post!.mediaUrl!,
+        widget.post!.ownerId!,
         user!.photoUrl!,
       );
     }
@@ -300,9 +338,9 @@ class UserPost extends StatelessWidget {
   }
 
   buildUser(BuildContext context) {
-    bool isMe = currentUserId() == post!.ownerId;
+    bool isMe = currentUserId() == widget.post!.ownerId;
     return StreamBuilder(
-      stream: usersRef.doc(post!.ownerId).snapshots(),
+      stream: usersRef.doc(widget.post!.ownerId).snapshots(),
       builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
         if (snapshot.hasData) {
           DocumentSnapshot snap = snapshot.data!;
@@ -356,7 +394,7 @@ class UserPost extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '${post?.username ?? ""}',
+                              '${widget.post?.username ?? ""}',
                               style: TextStyle(
                                 fontWeight: FontWeight.w900,
                                 color: Colors.black,
@@ -364,7 +402,7 @@ class UserPost extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                             ),
                             Text(
-                              '${post?.location ?? 'ChiveroApp'}',
+                              '${widget.post?.location ?? 'ChiveroApp'}',
                               style: TextStyle(
                                 fontSize: 10.0,
                                 color: Color(0xff4D4D4D),

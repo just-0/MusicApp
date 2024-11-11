@@ -9,8 +9,7 @@ class PostModel {
   String? description;
   String? mediaUrl;
   Timestamp? timestamp;
-  
-
+  String? audioUrl;
   PostModel({
     this.id,
     this.postId,
@@ -20,6 +19,7 @@ class PostModel {
     this.mediaUrl,
     this.username,
     this.timestamp,
+    this.audioUrl
   });
   PostModel.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -30,6 +30,7 @@ class PostModel {
     description = json['description'];
     mediaUrl = json['mediaUrl'];
     timestamp = json['timestamp'];
+    audioUrl = json['audioUrl'];
   }
 
   Map<String, dynamic> toJson() {
@@ -40,6 +41,8 @@ class PostModel {
     data['location'] = this.location;
     data['description'] = this.description;
     data['mediaUrl'] = this.mediaUrl;
+    data['audioUrl'] = this.audioUrl;
+    
 
     data['timestamp'] = this.timestamp;
     data['username'] = this.username;

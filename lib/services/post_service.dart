@@ -21,8 +21,15 @@ class PostService extends Service {
   }
 
 //uploads post to the post collection
-  uploadPost(File image, String location, String description) async {
+  uploadPost(File image, String location, String description, {File? audioFile}) async {
     String link = await uploadImage(posts, image);
+    String? audioLink;
+    if (audioFile != null) {
+      audioLink = await uploadImage(posts, audioFile);
+    }
+
+
+
     DocumentSnapshot doc =
         await usersRef.doc(firebaseAuth.currentUser!.uid).get();
     user = UserModel.fromJson(
@@ -35,6 +42,7 @@ class PostService extends Service {
       "username": user!.username,
       "ownerId": firebaseAuth.currentUser!.uid,
       "mediaUrl": link,
+      "audioUrl": audioLink,
       "description": description ?? "",
       "location": location ?? "ChiveroApp",
       "timestamp": Timestamp.now(),

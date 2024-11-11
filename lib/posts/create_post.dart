@@ -47,8 +47,12 @@ class _CreatePostState extends State<CreatePost> {
               GestureDetector(
                 onTap: () async {
                   await viewModel.uploadPosts(context);
-                  Navigator.pop(context);
-                  viewModel.resetPost();
+                   if (viewModel.audioFile != null) {
+                    Navigator.pop(context);
+                    viewModel.resetPost();
+                  }
+                  //Navigator.pop(context);
+                  //viewModel.resetPost();
                 },
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
@@ -129,6 +133,23 @@ class _CreatePostState extends State<CreatePost> {
                               height: MediaQuery.of(context).size.width - 30,
                               fit: BoxFit.cover,
                             ),
+                ),
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                'Seleccionar Audio'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              ListTile(
+                title: Text(viewModel.audioFile != null ? "Audio Seleccionado" : "Ningún audio seleccionado"),
+                trailing: IconButton(
+                  icon: Icon(Ionicons.musical_note_outline),
+                  onPressed: () async {
+                    await viewModel.pickAudio();
+                  },
                 ),
               ),
               SizedBox(height: 20.0),

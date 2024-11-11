@@ -12,6 +12,7 @@ import 'package:chivero/services/post_service.dart';
 import 'package:chivero/services/user_service.dart';
 import 'package:chivero/utils/constants.dart';
 import 'package:chivero/utils/firebase.dart';
+import 'package:file_picker/file_picker.dart';
 
 class PostsViewModel extends ChangeNotifier {
   //Services
@@ -41,7 +42,8 @@ class PostsViewModel extends ChangeNotifier {
   String? imgLink;
   bool edit = false;
   String? id;
-
+  File? audioFile;
+  String? audioUrl;
   //controllers
   TextEditingController locationTEC = TextEditingController();
 
@@ -88,6 +90,14 @@ class PostsViewModel extends ChangeNotifier {
     bio = val;
     notifyListeners();
   }
+  Future<void> pickAudio() async {
+    FilePickerResult? result = await FilePicker.platform.pickFiles(type: FileType.audio);
+    if (result != null) {
+      audioFile = File(result.files.single.path!);
+      notifyListeners();
+    }
+  }
+
 
   //Functions
   pickImage({bool camera = false, BuildContext? context}) async {
@@ -154,10 +164,16 @@ class PostsViewModel extends ChangeNotifier {
   }
 
   uploadPosts(BuildContext context) async {
+    if (audioFile == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Por favor selecciona un audio para continuar.")),
+      );
+      return;
+    }
     try {
       loading = true;
       notifyListeners();
-      await postService.uploadPost(mediaUrl!, location!, description!);
+      await postService.uploadPost(mediaUrl!, location!, description!, audioFile: audioFile);
       loading = false;
       resetPost();
       notifyListeners();
