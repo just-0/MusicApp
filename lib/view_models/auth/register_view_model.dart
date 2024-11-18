@@ -9,11 +9,17 @@ class RegisterViewModel extends ChangeNotifier {
   final GlobalKey<FormState> formKey = GlobalKey<FormState>();
   bool validate = false;
   bool loading = false;
-  String? username, email, country, password, cPassword;
+  String? username, email, country, city, district, password, cPassword;
   String? userType; // Nueva variable para el tipo de usuario
+  String? instrument; // Para músicos
+  String? studyPlace; // Lugar de estudio para músicos
+  List<String> eventTypes = []; // Lista de tipos de eventos para contratistas
+
   FocusNode usernameFN = FocusNode();
   FocusNode emailFN = FocusNode();
   FocusNode countryFN = FocusNode();
+  FocusNode cityFN = FocusNode();
+  FocusNode districtFN = FocusNode();
   FocusNode passFN = FocusNode();
   FocusNode cPassFN = FocusNode();
   AuthService auth = AuthService();
@@ -36,7 +42,12 @@ class RegisterViewModel extends ChangeNotifier {
             email: email,
             password: password,
             country: country,
+            city: city, 
+            district: district, 
             userType: userType, // Pasar el tipo de usuario al servicio de autenticación
+            instrument: userType == 'Musico' ? instrument : null, // Instrumento si es músico
+            studyPlace: userType == 'Musico' ? studyPlace : null, // Lugar de estudio si es músico
+            eventTypes: userType == 'Contratista' ? eventTypes : null, // Eventos si es contratista
           );
           print(success);
           if (success) {
@@ -56,11 +67,12 @@ class RegisterViewModel extends ChangeNotifier {
         loading = false;
         notifyListeners();
       } else {
-        showInSnackBar('The passwords does not match', context);
+        showInSnackBar('The passwords do not match', context);
       }
     }
   }
 
+  // Métodos para gestionar los datos básicos
   setEmail(val) {
     email = val;
     notifyListeners();
@@ -86,9 +98,39 @@ class RegisterViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  // Implementación de setUserType
+  setCity(val) {
+    city = val;
+    notifyListeners();
+  }
+
+  setDistrict(val) {
+    district = val;
+    notifyListeners();
+  }
+
   setUserType(val) {
     userType = val;
+    notifyListeners();
+  }
+
+  // Métodos específicos para músicos
+  setInstrument(val) {
+    instrument = val;
+    notifyListeners();
+  }
+
+  setStudyPlace(val) {
+    studyPlace = val;
+    notifyListeners();
+  }
+
+  // Métodos específicos para contratistas
+  toggleEventType(String eventType) {
+    if (eventTypes.contains(eventType)) {
+      eventTypes.remove(eventType);
+    } else {
+      eventTypes.add(eventType);
+    }
     notifyListeners();
   }
 

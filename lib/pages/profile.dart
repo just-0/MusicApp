@@ -97,7 +97,7 @@ class _ProfileState extends State<Profile> {
             floating: false,
             toolbarHeight: 5.0,
             collapsedHeight: 6.0,
-            expandedHeight: 225.0,
+            expandedHeight: 420.0,
             flexibleSpace: FlexibleSpaceBar(
               background: StreamBuilder(
                 stream: usersRef.doc(widget.profileId).snapshots(),
@@ -109,97 +109,140 @@ class _ProfileState extends State<Profile> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
+                        Center(
+                          child: CircleAvatar(
+                            radius: 50.0,
+                            backgroundImage: user.photoUrl != null && user.photoUrl!.isNotEmpty
+                                ? CachedNetworkImageProvider(user.photoUrl!)
+                                : null,
+                            backgroundColor: Colors.grey.shade300,
+                            child: user.photoUrl == null || user.photoUrl!.isEmpty
+                                ? Text(
+                                    user.username![0].toUpperCase(),
+                                    style: TextStyle(fontSize: 40.0, fontWeight: FontWeight.bold),
+                                  )
+                                : null,
+                          ),
+                        ),
+                        // Nombre y correo en un container centrado
+                        Container(
+                          alignment: Alignment.center,
+                          child: Column(
+                            children: [
+                              Text(
+                                user.username ?? '',
+                                style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
+                              ),
+                              Text(
+                                user.email ?? '',
+                                style: TextStyle(fontSize: 16.0, color: Colors.grey),
+                              ),
+                            ],
+                          ),
+                        ),
+                        SizedBox(height: 20.0),
+
+                        // Datos específicos según el tipo de usuario
+                        Container(
+                          alignment: Alignment.center,
+                          padding: EdgeInsets.symmetric(horizontal: 20.0),
+                          child: Column(
                           children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left: 20.0),
-                              child: user.photoUrl!.isEmpty
-                                  ? CircleAvatar(
-                                      radius: 40.0,
-                                      backgroundColor: Theme.of(context)
-                                          .colorScheme
-                                          .secondary,
-                                      child: Center(
-                                        child: Text(
-                                          '${user.username![0].toUpperCase()}',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontSize: 15.0,
-                                            fontWeight: FontWeight.w900,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                  : CircleAvatar(
-                                      radius: 40.0,
-                                      backgroundImage:
-                                          CachedNetworkImageProvider(
-                                        '${user.photoUrl}',
-                                      ),
-                                    ),
-                            ),
-                            SizedBox(width: 20.0),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                            // Fila con el logo de ubicación (país, ciudad, distrito) a la izquierda y el texto a la derecha
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SizedBox(height: 32.0),
-                                Row(
-                                  children: [
-                                    Visibility(
-                                      visible: false,
-                                      child: SizedBox(width: 10.0),
-                                    ),
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          width: 130.0,
-                                          child: Text(
-                                            user.username!,
-                                            style: TextStyle(
-                                              fontSize: 15.0,
-                                              fontWeight: FontWeight.w900,
-                                            ),
-                                            maxLines: null,
-                                          ),
-                                        ),
-                                        Container(
-                                          width: 130.0,
-                                          child: Text(
-                                            user.country!,
-                                            style: TextStyle(
-                                              fontSize: 12.0,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                            maxLines: 1,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                        ),
-                                        SizedBox(width: 10.0),
-                                        Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              user.email!,
-                                              style: TextStyle(
-                                                fontSize: 10.0,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                    
-                                  ],
+                                // Icono de ubicación
+                                Icon(
+                                  Icons.location_on,  // Icono relacionado con la ubicación
+                                  size: 24.0,
+                                  color: Colors.blue,
                                 ),
+                                SizedBox(width: 8.0), // Espacio entre el logo y el texto
+                                // Texto del país, ciudad, distrito
+                                Text(
+                                  '${user.country ?? ''}, ${user.city}, ${user.district ?? ''}',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(fontSize: 16.0),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: 10.0),
+
+                            // Información adicional según el tipo de usuario
+                            if (user.userType == 'Musico') ...[
+                              // Icono de instrumento musical
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.music_note,  // Icono relacionado con música
+                                    size: 24.0,
+                                    color: Colors.orange,
+                                  ),
+                                  SizedBox(width: 8.0), // Espacio entre el logo y el texto
+                                  Text(
+                                    'Instrumento: ${user.instrument ?? 'No especificado'}',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                              // Icono de lugar de estudio
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.school,  // Icono relacionado con el lugar de estudio
+                                    size: 24.0,
+                                    color: Colors.green,
+                                  ),
+                                  SizedBox(width: 8.0), // Espacio entre el logo y el texto
+                                  Text(
+                                    'Estudió en: ${user.studyPlace ?? 'No especificado'}',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                            ] else if (user.userType == 'Contratista') ...[
+                              // Icono de tipo de evento
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(
+                                    Icons.event,  // Icono relacionado con eventos
+                                    size: 24.0,
+                                    color: Colors.red,
+                                  ),
+                                  SizedBox(width: 8.0), // Espacio entre el logo y el texto
+                                  Text(
+                                    // Mostrar los eventos o un mensaje si la lista está vacía
+                                    'Eventos: ${user.eventTypes.isNotEmpty ? user.eventTypes.join(', ') : 'No especificado'}',
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 10.0),
+                            ],
+                            // Estrellas (calificación) con icono de estrellas
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.star,  // Icono de estrella para calificación
+                                  size: 24.0,
+                                  color: Colors.yellow,
+                                ),
+                                SizedBox(width: 8.0), // Espacio entre el logo y el texto
+                                buildStarRating(user.rating ?? 0.0),
                               ],
                             ),
                           ],
                         ),
+
+                        ),
+
                         Padding(
                           padding: const EdgeInsets.only(top: 10.0, left: 20.0),
                           child: user.bio!.isEmpty
@@ -354,6 +397,57 @@ class _ProfileState extends State<Profile> {
         ],
       ),
     );
+  }
+
+  // Widget para las estrellas de calificación
+  Widget buildStarRating(double rating) {
+    // Redondear el rating a un valor entero
+    int fullStars = rating.floor(); // Número de estrellas completas
+    double fractionalStar = rating - fullStars; // Parte decimal, para las estrellas medias
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(5, (index) {
+        if (index < fullStars) {
+          // Estrella completa
+          return GestureDetector(
+            onTap: () => updateRating(index + 1),
+            child: Icon(
+              Icons.star,
+              color: Colors.yellow,
+              size: 30.0,
+            ),
+          );
+        } else if (index == fullStars && fractionalStar > 0) {
+          // Estrella media (si tiene una fracción)
+          return GestureDetector(
+            onTap: () => updateRating(index + 1),
+            child: Icon(
+              Icons.star_half,
+              color: Colors.yellow,
+              size: 30.0,
+            ),
+          );
+        } else {
+          // Estrella vacía
+          return GestureDetector(
+            onTap: () => updateRating(index + 1),
+            child: Icon(
+              Icons.star_border,
+              color: Colors.yellow,
+              size: 30.0,
+            ),
+          );
+        }
+      }),
+    );
+  }
+
+
+  // Función para actualizar la calificación
+  void updateRating(int newRating) async {
+    await usersRef.doc(widget.profileId).update({'rating': newRating});
+    setState(() {});
   }
 
   buildCount(String label, int count) {
