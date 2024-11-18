@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:chivero/auth/login/login.dart';
+import 'package:chivero/auth/register/register.dart';
+
 
 class Landing extends StatefulWidget {
   @override
@@ -85,7 +87,7 @@ class _LandingState extends State<Landing> {
                 onTap: () {
                   Navigator.of(context).pushReplacement(
                     CupertinoPageRoute(
-                      builder: (_) => Login(),
+                      builder: (_) => Register(),
                     ),
                   );
                 },

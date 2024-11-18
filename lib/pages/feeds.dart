@@ -21,26 +21,25 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin {
   bool loadingMore = false;
   ScrollController scrollController = ScrollController();
 
-  List<String> friendsIds = []; // Aquí guardaremos los IDs de los amigos
+  List<String> friendsIds = []; // Aquí guardamos los IDs de los amigos
 
   @override
   void initState() {
     super.initState();
     fetchFriends(); // Llamada para obtener la lista de amigos
-    scrollController.addListener(() async {
-      if (scrollController.position.pixels == scrollController.position.maxScrollExtent) {
+    scrollController.addListener(() {
+      if (scrollController.position.pixels == scrollController.position.maxScrollExtent && !loadingMore) {
         setState(() {
-          page += 5;
           loadingMore = true;
+          page += 5;
         });
+        fetchPosts(); // Cargar más posts al llegar al final
       }
     });
   }
 
   Future<void> fetchFriends() async {
     final String currentUserId = firebaseAuth.currentUser!.uid;
-    print("currentId: ");
-    print(currentUserId);
 
     // Obtén los IDs de los amigos desde la colección 'userFollowing'
     var friendsSnapshot = await followingRef
@@ -51,6 +50,23 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin {
     setState(() {
       friendsIds = friendsSnapshot.docs.map((doc) => doc.id).toList();
     });
+  }
+
+  Future<List<PostModel>> fetchPosts() async {
+    if (friendsIds.isEmpty) return [];
+
+    var postsSnapshot = await FirebaseFirestore.instance
+        .collection('posts')
+        .where('ownerId', whereIn: friendsIds)
+        .orderBy('timestamp', descending: true)
+        .limit(page)
+        .get();
+
+    setState(() {
+      loadingMore = false;
+    });
+
+    return postsSnapshot.docs.map((doc) => PostModel.fromJson(doc.data())).toList();
   }
 
   @override
@@ -75,44 +91,42 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin {
       body: RefreshIndicator(
         color: Theme.of(context).colorScheme.secondary,
         onRefresh: fetchFriends,
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              StoryWidget(),
-              Container(
-                height: MediaQuery.of(context).size.height,
-                child: FutureBuilder<List<PostModel>>(
-                  future: getFriendsPosts(),
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.waiting) {
-                      return circularProgress(context);
-                    } else if (snapshot.hasData) {
-                      List<PostModel> posts = snapshot.data!;
-                      return ListView.builder(
-                        physics: AlwaysScrollableScrollPhysics(),
-                        controller: scrollController,
-                        itemCount: posts.length,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.all(10.0),
-                            child: UserPost(post: posts[index]),
-                          );
-                        },
-                      );
-                    } else {
-                      return Center(
-                        child: Text(
-                          'No Feeds',
-                          style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
-                        ),
-                      );
-                    }
-                  },
+        child: FutureBuilder<List<PostModel>>(
+          future: getFriendsPosts(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return circularProgress(context);
+            } else if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              List<PostModel> posts = snapshot.data!;
+              return Column(
+                children: [
+                  StoryWidget(),
+                  Expanded(
+                    child: ListView.builder(
+                      controller: scrollController,
+                      itemCount: posts.length + (loadingMore ? 1 : 0),
+                      itemBuilder: (context, index) {
+                        if (index == posts.length && loadingMore) {
+                          return Center(child: circularProgress(context)); // Mostrar indicador de carga
+                        }
+                        return Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: UserPost(post: posts[index]),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              );
+            } else {
+              return Center(
+                child: Text(
+                  'No Feeds',
+                  style: TextStyle(fontSize: 26.0, fontWeight: FontWeight.bold),
                 ),
-              ),
-            ],
-          ),
+              );
+            }
+          },
         ),
       ),
     );

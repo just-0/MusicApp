@@ -67,7 +67,6 @@ class _RegisterState extends State<Register> {
       autovalidateMode: AutovalidateMode.onUserInteraction,
       child: Column(
         children: [
-           // Nuevo campo de selección para el tipo de usuario
           DropdownButtonFormField<String>(
             value: _userType,
             items: [
@@ -120,7 +119,7 @@ class _RegisterState extends State<Register> {
             nextFocusNode: viewModel.countryFN,
           ),
           SizedBox(height: 20.0),
-          TextFormBuilder(
+                    TextFormBuilder(
             enabled: !viewModel.loading,
             prefix: Ionicons.pin_outline,
             hintText: "País",
@@ -129,9 +128,103 @@ class _RegisterState extends State<Register> {
             onSaved: (String val) {
               viewModel.setCountry(val);
             },
-            focusNode: viewModel.countryFN,
-            nextFocusNode: viewModel.passFN,
+            focusNode: viewModel.countryFN, // Focus para País
+            nextFocusNode: viewModel.cityFN, // Focus al siguiente campo (Ciudad)
           ),
+          SizedBox(height: 20.0),
+          TextFormBuilder(
+            enabled: !viewModel.loading,
+            prefix: Ionicons.pin_outline,
+            hintText: "Ciudad",
+            textInputAction: TextInputAction.next,
+            validateFunction: Validations.validateName,
+            onSaved: (String val) {
+              viewModel.setCity(val);
+            },
+            focusNode: viewModel.cityFN, // Focus para Ciudad
+            nextFocusNode: viewModel.districtFN, // Focus al siguiente campo (Distrito)
+          ),
+          SizedBox(height: 20.0),
+          TextFormBuilder(
+            enabled: !viewModel.loading,
+            prefix: Ionicons.pin_outline,
+            hintText: "Distrito",
+            textInputAction: TextInputAction.done,
+            validateFunction: Validations.validateName,
+            onSaved: (String val) {
+              viewModel.setDistrict(val);
+            },
+            focusNode: viewModel.districtFN, // Focus para Distrito
+            nextFocusNode: null, // No hay siguiente campo después de Distrito
+          ),
+
+          if (_userType == 'Musico') ...[
+            SizedBox(height: 20.0),
+            DropdownButtonFormField<String>(
+              items: [
+                DropdownMenuItem(child: Text("Guitarra"), value: 'Guitarra'),
+                DropdownMenuItem(child: Text("Piano"), value: 'Piano'),
+                DropdownMenuItem(child: Text("Batería"), value: 'Batería'),
+                DropdownMenuItem(child: Text("Violín"), value: 'Violín'),
+              ],
+              onChanged: (String? value) {
+                setState(() {
+                  viewModel.setInstrument(value!);
+                });
+              },
+              decoration: InputDecoration(
+                prefixIcon: Icon(Ionicons.musical_note_outline),
+                hintText: "Selecciona tu instrumento",
+              ),
+            ),
+            SizedBox(height: 20.0),
+            TextFormBuilder(
+              enabled: !viewModel.loading,
+              prefix: Ionicons.school_outline,
+              hintText: "Lugar de estudio",
+              textInputAction: TextInputAction.next,
+              validateFunction: Validations.validateName,
+              onSaved: (String val) {
+                viewModel.setStudyPlace(val);
+              },
+            ),
+          ],
+          if (_userType == 'Contratista') ...[
+            SizedBox(height: 20.0),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("Selecciona los tipos de eventos:"),
+                CheckboxListTile(
+                  value: viewModel.eventTypes.contains('Bodas'),
+                  title: Text("Bodas"),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      viewModel.toggleEventType('Bodas');
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  value: viewModel.eventTypes.contains('Tocadas'),
+                  title: Text("Tocadas"),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      viewModel.toggleEventType('Tocadas');
+                    });
+                  },
+                ),
+                CheckboxListTile(
+                  value: viewModel.eventTypes.contains('Conciertos Sinfónicos'),
+                  title: Text("Conciertos Sinfónicos"),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      viewModel.toggleEventType('Conciertos Sinfónicos');
+                    });
+                  },
+                ),
+              ],
+            ),
+          ],
           SizedBox(height: 20.0),
           PasswordFormBuilder(
             enabled: !viewModel.loading,
@@ -161,7 +254,6 @@ class _RegisterState extends State<Register> {
             },
             focusNode: viewModel.cPassFN,
           ),
-          // SizedBox(height: 20.0),
           SizedBox(height: 25.0),
           Container(
             height: 45.0,
