@@ -68,7 +68,7 @@ class _FeedsState extends State<Feeds> with AutomaticKeepAliveClientMixin {
             onPressed: () {
               Navigator.push(context, CupertinoPageRoute(builder: (_) => Chats()));
             },
-          ),
+          ), 
           SizedBox(width: 20.0),
         ],
       ),

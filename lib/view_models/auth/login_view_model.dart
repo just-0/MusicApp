@@ -39,7 +39,7 @@ class LoginViewModel extends ChangeNotifier {
         loading = false;
         notifyListeners();
         print(e);
-        showInSnackBar('${auth.handleFirebaseAuthError(e.toString())}',context);
+        showInSnackBar('Correo o contraseña incorrecta',context);
       }
       loading = false;
       notifyListeners();

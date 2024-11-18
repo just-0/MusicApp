@@ -15,7 +15,35 @@ class CreatePost extends StatefulWidget {
   _CreatePostState createState() => _CreatePostState();
 }
 
+
 class _CreatePostState extends State<CreatePost> {
+
+
+  UserModel? currentUser;
+  bool isLoading = true;
+  Future<void> fetchCurrentUser() async {
+  try {
+    final userDoc = await usersRef.doc(firebaseAuth.currentUser!.uid).get();
+    if (userDoc.exists) {
+      setState(() {
+        currentUser = UserModel.fromJson(userDoc.data() as Map<String, dynamic>);
+        isLoading = false;
+      });
+    }
+  } catch (e) {
+    print('Error fetching user: $e');
+    setState(() {
+      isLoading = false;
+    });
+  }
+}
+@override
+void initState() {
+  super.initState();
+  fetchCurrentUser();
+}
+
+
   @override
   Widget build(BuildContext context) {
     currentUserId() {
@@ -46,7 +74,7 @@ class _CreatePostState extends State<CreatePost> {
             actions: [
               GestureDetector(
                 onTap: () async {
-                  await viewModel.uploadPosts(context);
+                  await viewModel.uploadPosts(context, currentUser!.userType ?? "Contratista");
                    if (viewModel.audioFile != null) {
                     Navigator.pop(context);
                     viewModel.resetPost();
@@ -57,7 +85,7 @@ class _CreatePostState extends State<CreatePost> {
                 child: Padding(
                   padding: const EdgeInsets.all(20.0),
                   child: Text(
-                    'Post'.toUpperCase(),
+                    'Publicar'.toUpperCase(),
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 15.0,
@@ -68,34 +96,32 @@ class _CreatePostState extends State<CreatePost> {
               )
             ],
           ),
-          body: ListView(
+          body: isLoading   ? Center(child: CircularProgressIndicator())
+          : (currentUser?.userType == 'Musico'
+                ? buildMusicoView(viewModel)
+                : buildContratistaView(viewModel)),
+        ),
+      ),
+    );
+  }
+  Widget buildContratistaView(PostsViewModel viewModel) {
+    return ListView(
             padding: EdgeInsets.symmetric(horizontal: 15.0),
             children: [
               SizedBox(height: 15.0),
-              StreamBuilder(
-                stream: usersRef.doc(currentUserId()).snapshots(),
-                builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {
-                  if (snapshot.hasData) {
-                    UserModel user = UserModel.fromJson(
-                      snapshot.data!.data() as Map<String, dynamic>,
-                    );
-                    return ListTile(
-                      leading: CircleAvatar(
-                        radius: 25.0,
-                        backgroundImage: NetworkImage(user.photoUrl!),
-                      ),
-                      title: Text(
-                        user.username!,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      subtitle: Text(
-                        user.email!,
-                      ),
-                    );
-                  }
-                  return Container();
-                },
-              ),
+              currentUser != null
+                      ? ListTile(
+                          leading: CircleAvatar(
+                            radius: 25.0,
+                            backgroundImage: NetworkImage(currentUser!.photoUrl!),
+                          ),
+                          title: Text(
+                            '${currentUser!.username}' ?? 'Usuario',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(currentUser!.email ?? 'Sin correo'),
+                        )
+                      : Center(child: Text('No se encontraron datos')),
               InkWell(
                 onTap: () => showImageChoices(context, viewModel),
                 child: Container(
@@ -104,7 +130,214 @@ class _CreatePostState extends State<CreatePost> {
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
                     borderRadius: BorderRadius.all(
-                      Radius.circular(5.0),
+                      Radius.circular(20.0),
+                    ),
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.secondary,
+                    ),
+                  ),
+                  child: viewModel.imgLink != null
+                      ? CustomImage(
+                          imageUrl: viewModel.imgLink,
+                          width: MediaQuery.of(context).size.width,
+                          height: MediaQuery.of(context).size.width - 30,
+                          fit: BoxFit.cover,
+                        )
+                      : viewModel.mediaUrl == null
+                          ? Center(
+                              child: Text(
+                                'Subir una Foto',
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).colorScheme.secondary,
+                                ),
+                              ),
+                            )
+                          : Image.file(
+                              viewModel.mediaUrl!,
+                              width: MediaQuery.of(context).size.width,
+                              height: MediaQuery.of(context).size.width - 30,
+                              fit: BoxFit.cover,
+                            ),
+                ),
+              ),
+              
+             
+              SizedBox(height: 20.0),
+              Text(
+                'Título de la Publicación'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextFormField(
+                initialValue: viewModel.description,
+                decoration: InputDecoration(
+                  hintText: 'Un título atractivo...',
+                  focusedBorder: UnderlineInputBorder(),
+                ),
+                maxLines: null,
+                onChanged: (val) => viewModel.setTitulo(val),
+              ),
+              SizedBox(height: 20.0),
+              Text(
+                'Ubicación'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              ListTile(
+                  contentPadding: EdgeInsets.all(0.0),
+                  title: Container(
+                    width: 250.0,
+                    child: TextFormField(
+                      controller: viewModel.locationTEC..text = "Arequipa/Perú",
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.all(0.0),
+                        hintText: 'Arequipa/Perú', // Texto de sugerencia (en caso de estar vacío)
+                        focusedBorder: UnderlineInputBorder(),
+                      ),
+                      maxLines: null,
+                      onChanged: (val) => viewModel.setLocation(val),
+                    ),
+                  ),
+                  trailing: IconButton(
+                    tooltip: "Usa tu ubicación actual",
+                    icon: Icon(
+                      CupertinoIcons.map_pin_ellipse,
+                      size: 25.0,
+                    ),
+                    iconSize: 30.0,
+                    color: Theme.of(context).colorScheme.secondary,
+                    onPressed: () => viewModel.getLocation(),
+                  ),
+                ),
+               Text(
+                'Descripción de la publicación'.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 15.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              TextFormField(
+                initialValue: viewModel.description,
+                decoration: InputDecoration(
+                  hintText: 'Oportunidad de Trabajo en...',
+                  focusedBorder: UnderlineInputBorder(),
+                ),
+                maxLines: null,
+                onChanged: (val) => viewModel.setDescription(val),
+              ),
+              ExpansionTile(
+      title: Text("Tipos de músicos"),
+      children: [
+        CheckboxListTile(
+          title: Text('Guitarrista'),
+          value: viewModel.instrumentos.contains('Guitarrista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Guitarrista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Violinista'),
+          value: viewModel.instrumentos.contains('Violinista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Violinista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Saxofonista'),
+          value: viewModel.instrumentos.contains('Saxofonista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Saxofonista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Percusionista'),
+          value: viewModel.instrumentos.contains('Percusionista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Percusionista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Bajista'),
+          value: viewModel.instrumentos.contains('Bajista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Bajista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Tecladista'),
+          value: viewModel.instrumentos.contains('Tecladista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Tecladista', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Cantante'),
+          value: viewModel.instrumentos.contains('Cantante'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Cantante', selected!);
+          },
+        ),
+        CheckboxListTile(
+          title: Text('Baterista'),
+          value: viewModel.instrumentos.contains('Baterista'),
+          onChanged: (bool? selected) {
+            viewModel.toggleMusician('Baterista', selected!);
+          },
+        ),
+        // Caja de texto para añadir otro instrumento
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: TextField(
+            onChanged: (String value) {
+              // Aquí puedes manejar el texto ingresado por el usuario
+              viewModel.customInstrument = value;  // Guardar el valor en el modelo
+            },
+            decoration: InputDecoration(
+              labelText: 'Otro instrumento (si no está en la lista)',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+      ],
+    )
+            ],
+          );
+  }
+  
+  
+  
+  Widget buildMusicoView(PostsViewModel viewModel) {
+    return ListView(
+            padding: EdgeInsets.symmetric(horizontal: 15.0),
+            children: [
+              SizedBox(height: 15.0),
+              currentUser != null
+                      ? ListTile(
+                          leading: CircleAvatar(
+                            radius: 25.0,
+                            backgroundImage: NetworkImage(currentUser!.photoUrl!),
+                          ),
+                          title: Text(
+                            '${currentUser!.username}' ?? 'Usuario',
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: Text(currentUser!.email ?? 'Sin correo'),
+                        )
+                      : Center(child: Text('No se encontraron datos')),
+              InkWell(
+                onTap: () => showImageChoices(context, viewModel),
+                child: Container(
+                  width: MediaQuery.of(context).size.width,
+                  height: MediaQuery.of(context).size.width - 30,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[300],
+                    borderRadius: BorderRadius.all(
+                      Radius.circular(20.0),
                     ),
                     border: Border.all(
                       color: Theme.of(context).colorScheme.secondary,
@@ -163,11 +396,11 @@ class _CreatePostState extends State<CreatePost> {
               TextFormField(
                 initialValue: viewModel.description,
                 decoration: InputDecoration(
-                  hintText: 'Canción 2.',
+                  hintText: 'Un título atractivo...',
                   focusedBorder: UnderlineInputBorder(),
                 ),
                 maxLines: null,
-                onChanged: (val) => viewModel.setDescription(val),
+                onChanged: (val) => viewModel.setTitulo(val),
               ),
               SizedBox(height: 20.0),
               Text(
@@ -178,31 +411,31 @@ class _CreatePostState extends State<CreatePost> {
                 ),
               ),
               ListTile(
-                contentPadding: EdgeInsets.all(0.0),
-                title: Container(
-                  width: 250.0,
-                  child: TextFormField(
-                    controller: viewModel.locationTEC,
-                    decoration: InputDecoration(
-                      contentPadding: EdgeInsets.all(0.0),
-                      hintText: 'Arequipa/Perú',
-                      focusedBorder: UnderlineInputBorder(),
+                  contentPadding: EdgeInsets.all(0.0),
+                  title: Container(
+                    width: 250.0,
+                    child: TextFormField(
+                      controller: viewModel.locationTEC..text = "Arequipa/Perú",
+                      decoration: InputDecoration(
+                        contentPadding: EdgeInsets.all(0.0),
+                        hintText: 'Arequipa/Perú', // Texto de sugerencia (en caso de estar vacío)
+                        focusedBorder: UnderlineInputBorder(),
+                      ),
+                      maxLines: null,
+                      onChanged: (val) => viewModel.setLocation(val),
                     ),
-                    maxLines: null,
-                    onChanged: (val) => viewModel.setLocation(val),
+                  ),
+                  trailing: IconButton(
+                    tooltip: "Usa tu ubicación actual",
+                    icon: Icon(
+                      CupertinoIcons.map_pin_ellipse,
+                      size: 25.0,
+                    ),
+                    iconSize: 30.0,
+                    color: Theme.of(context).colorScheme.secondary,
+                    onPressed: () => viewModel.getLocation(),
                   ),
                 ),
-                trailing: IconButton(
-                  tooltip: "Usa tu ubicación actual",
-                  icon: Icon(
-                    CupertinoIcons.map_pin_ellipse,
-                    size: 25.0,
-                  ),
-                  iconSize: 30.0,
-                  color: Theme.of(context).colorScheme.secondary,
-                  onPressed: () => viewModel.getLocation(),
-                ),
-              ),
               Text(
                 'Descripción de la publicación'.toUpperCase(),
                 style: TextStyle(
@@ -220,12 +453,10 @@ class _CreatePostState extends State<CreatePost> {
                 onChanged: (val) => viewModel.setDescription(val),
               ),
             ],
-          ),
-        ),
-      ),
-    );
+          );
   }
-
+  
+  
   showImageChoices(BuildContext context, PostsViewModel viewModel) {
     showModalBottomSheet(
       context: context,

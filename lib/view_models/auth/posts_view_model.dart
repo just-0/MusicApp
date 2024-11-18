@@ -44,9 +44,23 @@ class PostsViewModel extends ChangeNotifier {
   String? id;
   File? audioFile;
   String? audioUrl;
+  String? titulo;
+  String customInstrument = "";
+  List<String> instrumentos = [];
   //controllers
   TextEditingController locationTEC = TextEditingController();
 
+  // Este método agrega o quita músicos de la lista
+  void toggleMusician(String musician, bool isSelected) {
+    if (isSelected) {
+      
+      instrumentos.add(musician);  // Agregar músico
+    } else {
+      instrumentos.remove(musician);  // Quitar músico
+    }
+    print(instrumentos);
+    notifyListeners();  // Notificar a los widgets que depende de este valor
+  }
   //Setters
   setEdit(bool val) {
     edit = val;
@@ -66,7 +80,11 @@ class PostsViewModel extends ChangeNotifier {
       notifyListeners();
     }
   }
-
+  setTitulo(String val) {
+    print('SetTitulo $val');
+    titulo = val;
+    notifyListeners();
+  }
   setUsername(String val) {
     print('SetName $val');
     username = val;
@@ -84,7 +102,7 @@ class PostsViewModel extends ChangeNotifier {
     location = val;
     notifyListeners();
   }
-
+  
   setBio(String val) {
     print('SetBio $val');
     bio = val;
@@ -163,28 +181,63 @@ class PostsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  uploadPosts(BuildContext context) async {
-    if (audioFile == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Por favor selecciona un audio para continuar.")),
-      );
-      return;
-    }
-    try {
-      loading = true;
-      notifyListeners();
-      await postService.uploadPost(mediaUrl!, location!, description!, audioFile: audioFile);
-      loading = false;
-      resetPost();
-      notifyListeners();
-    } catch (e) {
-      print(e);
-      loading = false;
-      resetPost();
-      showInSnackBar('Uploaded successfully!', context);
-      notifyListeners();
-    }
+ uploadPosts(BuildContext context, String typeUser) async {
+  instrumentos.add(customInstrument);
+  if (audioFile == null && typeUser == "Musico") {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Por favor selecciona un audio para continuar.")),
+    );
+    return;
   }
+
+  // Verificación de nulidad de instrumentos
+  if (instrumentos == null || instrumentos.isEmpty && typeUser == "Contratista") {
+    print(instrumentos);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("Por favor selecciona al menos un músico.")),
+    );
+    return;
+  }
+
+  try {
+    loading = true;
+    notifyListeners();
+
+    // Llamada al servicio de publicación
+    await postService.uploadPost(
+      mediaUrl ?? File(''),  // Verificación para no pasar 'null'
+      location ?? "Desconocida",  // Valor por defecto si es null
+      description ?? "",  // Valor por defecto si es null
+      instrumentos,
+      titulo,
+      audioFile: audioFile,
+
+    );
+
+    loading = false;
+    resetPost();
+    notifyListeners();
+
+    // Mostrar el mensaje de éxito
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text("¡Publicación subida con éxito!")),
+    );
+
+    // Regresar a la pantalla anterior
+    Navigator.pop(context);
+
+  } catch (e) {
+    print(e);
+    loading = false;
+    resetPost();
+    showInSnackBar('Ocurrió un error al publicar.', context);
+    notifyListeners();
+  }
+}
+
+
+
+
 
   uploadProfilePicture(BuildContext context) async {
     if (mediaUrl == null) {
@@ -220,4 +273,6 @@ class PostsViewModel extends ChangeNotifier {
     ScaffoldMessenger.of(context).removeCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(value)));
   }
+
+  
 }

@@ -1,6 +1,8 @@
 import 'package:animations/animations.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chivero/chats/conversation.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ionicons/ionicons.dart';
@@ -99,18 +101,96 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
         
           onTap: () {},
           borderRadius: BorderRadius.circular(10.0),
-            child: OpenContainer(
-
-            transitionType: ContainerTransitionType.fadeThrough,
-            openBuilder: (BuildContext context, VoidCallback _) {
-              return ViewImage(post: widget.post);
-            },
-            closedElevation: 0.0,
-            closedShape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.all(
-                Radius.circular(10.0),
-              ),
+          child: OpenContainer(
+  openBuilder: (BuildContext context, VoidCallback _) {
+  // Vista ampliada con imagen, título, descripción y botón "Aplicar"
+  return Scaffold(
+    appBar: AppBar(
+      title: Text('Detalles del trabajo'),
+    ),
+    body: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Imagen
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10.0),
+            child: Image.network(
+              widget.post?.mediaUrl ?? 'https://via.placeholder.com/150',
+              height: 500,
+              width: double.infinity,
+              fit: BoxFit.cover,
             ),
+          ),
+          SizedBox(height: 16.0),
+
+          // Título
+          Text(
+            widget.post?.titulo ?? 'Título no disponible',
+            style: TextStyle(
+              fontSize: 24.0,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          SizedBox(height: 8.0),
+
+          // Descripción
+          Text(
+            widget.post?.description ?? 'Descripción no disponible',
+            style: TextStyle(
+              fontSize: 16.0,
+            ),
+          ),
+          Spacer(),
+
+          // Botón "Aplicar" (visible solo si audioUrl no es null)
+          if (widget.post?.audioUrl == null)
+            Center(
+              child: ElevatedButton(
+                onPressed: () {
+                  final user1 = FirebaseAuth.instance.currentUser?.uid;
+                  final user2 = widget.post!.ownerId;
+
+                  if (user1 != null && user2 != null) {
+                    Navigator.push(
+                      context,
+                      CupertinoPageRoute(
+                        builder: (_) => StreamBuilder(
+                          stream: chatIdRef
+                              .where("users", isEqualTo: getUser(user1, user2))
+                              .snapshots(),
+                          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                            if (snapshot.hasData) {
+                              var snap = snapshot.data;
+                              List docs = snap!.docs;
+                              return docs.isEmpty
+                                  ? Conversation(userId: user2, chatId: 'newChat')
+                                  : Conversation(userId: user2, chatId: docs[0].get('chatId').toString());
+                            }
+                            return Conversation(userId: user2, chatId: 'newChat');
+                          },
+                        ),
+                      ),
+                    );
+                  } else {
+                    print("No se pudieron obtener los IDs de usuario.");
+                  }
+                },
+                child: Text('Aplicar'),
+              ),
+            )
+        ],
+      ),
+    ),
+  );
+},
+closedElevation: 0.0,
+closedShape: const RoundedRectangleBorder(
+  borderRadius: BorderRadius.all(
+    Radius.circular(10.0),
+  ),
+),
             onClosed: (v) {},
             closedColor: Theme.of(context).cardColor,
             closedBuilder: (BuildContext context, VoidCallback openContainer) {
@@ -120,30 +200,46 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
                     children: [
                       SizedBox(height: 50),
                       GestureDetector(
-                        onTap: toggleAudio,
+                        onTap: widget.post?.audioUrl != null ? toggleAudio : null, // Solo permite hacer tap si hay un audio
                         child: Stack(
                           alignment: Alignment.center,
                           children: [
-                            // Imagen con rotación
-                            RotationTransition(
-                              turns: _animationController,
-                              child: ClipOval(
-                                child: CustomImage(
-                                  imageUrl: widget.post?.mediaUrl ?? '',
-                                  height: 250.0, // 
-                                  width: 250.0,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-                            ),
-                            Icon(
-                              isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
-                              size: isPlaying ? 0.0 : 100.0, // El tamaño es 0 cuando está reproduciendo
-                              color: Colors.black.withOpacity(0.6), // Cambiar la opacidad si se desea
-                            ),
+                            // Si hay audioUrl, mostramos la imagen en un círculo con rotación
+                            widget.post?.audioUrl != null
+                                ? RotationTransition(
+                                    turns: _animationController,
+                                    child: ClipOval(
+                                      child: CustomImage(
+                                        imageUrl: widget.post?.mediaUrl ?? '',
+                                        height: 250.0,
+                                        width: 250.0,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  )
+                                : Container(
+                                    height: 250.0, // Dimensiones del cuadrado
+                                    width: 250.0,
+                                    child: CustomImage(
+                                      imageUrl: widget.post?.mediaUrl ?? '',
+                                      height: 250.0,
+                                      width: 250.0,
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+
+                            // Si hay audioUrl, mostramos el ícono de reproducir/pausar
+                            widget.post?.audioUrl != null
+                                ? Icon(
+                                    isPlaying ? Icons.pause_circle_filled : Icons.play_circle_filled,
+                                    size: isPlaying ? 0.0 : 100.0,
+                                    color: Colors.black.withOpacity(0.6),
+                                  )
+                                : SizedBox.shrink(), // No mostrar nada si no hay audio
                           ],
                         ),
                       ),
+
                       Padding(
                         padding:
                             EdgeInsets.symmetric(horizontal: 3.0, vertical: 5.0),
@@ -226,7 +322,7 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
                               child: Padding(
                                 padding: const EdgeInsets.only(left: 5.0, top: 3.0),
                                 child: Text(
-                                  '${widget.post?.description ?? ""}',
+                                  '${widget.post?.titulo ?? ""}',
                                   style: TextStyle(
                                     color:
                                         Theme.of(context).textTheme.bodySmall?.color,
@@ -440,6 +536,14 @@ class _UserPostState extends State<UserPost> with SingleTickerProviderStateMixin
     },
   );
 }
+String getUser(String user1, String user2) {
+    user1 = user1.substring(0, 5);
+    user2 = user2.substring(0, 5);
+    List<String> list = [user1, user2];
+    list.sort();
+    var chatId = "${list[0]}-${list[1]}";
+    return chatId;
+  }
 
   showProfile(BuildContext context, {String? profileId}) {
     Navigator.push(

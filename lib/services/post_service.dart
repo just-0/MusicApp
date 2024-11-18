@@ -20,36 +20,39 @@ class PostService extends Service {
     });
   }
 
-//uploads post to the post collection
-  uploadPost(File image, String location, String description, {File? audioFile}) async {
-    String link = await uploadImage(posts, image);
-    String? audioLink;
-    if (audioFile != null) {
-      audioLink = await uploadImage(posts, audioFile);
-    }
-
-
-
-    DocumentSnapshot doc =
-        await usersRef.doc(firebaseAuth.currentUser!.uid).get();
-    user = UserModel.fromJson(
-      doc.data() as Map<String, dynamic>,
-    );
-    var ref = postRef.doc();
-    ref.set({
-      "id": ref.id,
-      "postId": ref.id,
-      "username": user!.username,
-      "ownerId": firebaseAuth.currentUser!.uid,
-      "mediaUrl": link,
-      "audioUrl": audioLink,
-      "description": description ?? "",
-      "location": location ?? "ChiveroApp",
-      "timestamp": Timestamp.now(),
-    }).catchError((e) {
-      print(e);
-    });
+uploadPost(File image, String location, String description, List<String> instrumentos, String? titulo, {File? audioFile}) async {
+  if (image == null || location == null || description == null || instrumentos.isEmpty) {
+    throw 'Faltan datos requeridos';
   }
+
+  String link = await uploadImage(posts, image);
+  String? audioLink;
+
+  if (audioFile != null) {
+    audioLink = await uploadImage(posts, audioFile);
+  }
+
+  DocumentSnapshot doc = await usersRef.doc(firebaseAuth.currentUser!.uid).get();
+  user = UserModel.fromJson(doc.data() as Map<String, dynamic>);
+  var ref = postRef.doc();
+
+  ref.set({
+    "id": ref.id,
+    "postId": ref.id,
+    "username": user!.username,
+    "ownerId": firebaseAuth.currentUser!.uid,
+    "mediaUrl": link,
+    "audioUrl": audioLink,  // Este puede ser null
+    "description": description ?? "",
+    "location": location ?? "ChiveroApp",
+    "timestamp": Timestamp.now(),
+    "instrumentos": instrumentos,
+    "titulo": titulo,
+  }).catchError((e) {
+    print(e);
+  });
+}
+
 
 //upload a comment
   uploadComment(String currentUserId, String comment, String postId,
