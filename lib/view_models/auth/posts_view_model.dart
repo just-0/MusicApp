@@ -224,7 +224,7 @@ class PostsViewModel extends ChangeNotifier {
     );
 
     // Regresar a la pantalla anterior
-    Navigator.pop(context);
+   // Navigator.pop(context);
 
   } catch (e) {
     print(e);

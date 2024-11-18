@@ -64,29 +64,46 @@ class _ProfileState extends State<Profile> {
         title: Text('ChiveroApp'),
         actions: [
           widget.profileId == firebaseAuth.currentUser!.uid
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.only(right: 25.0),
-                    child: GestureDetector(
-                      onTap: () async {
-                        await firebaseAuth.signOut();
-                        Navigator.of(context).push(
-                          CupertinoPageRoute(
-                            builder: (_) => Login(),
-                          ),
-                        );
-                      },
-                      child: Text(
-                        'Cerrar Sesión',
-                        style: TextStyle(
-                          fontWeight: FontWeight.w900,
-                          fontSize: 15.0,
-                        ),
-                      ),
-                    ),
-                  ),
-                )
-              : SizedBox()
+    ? Center(
+        child: Padding(
+          padding: const EdgeInsets.only(right: 25.0),
+          child: GestureDetector(
+            onTap: () async {
+              // Limpiar el estado local
+              setState(() {
+                user = null;
+                isLoading = false;
+                postCount = 0;
+                followersCount = 0;
+              followingCount = 0;
+              isFollowing = false;
+              });
+
+              // Limpiar cualquier controlador de texto o de estado
+              controller.dispose(); // Si tienes un controlador de scroll
+
+              // Cerrar sesión de Firebase
+              await firebaseAuth.signOut();
+
+              // Redirigir a la pantalla de login sin animación
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                  builder: (_) => Login(),
+                ),
+                (route) => false,  // Elimina todas las rutas anteriores
+              );
+            },
+            child: Text(
+              'Cerrar Sesión',
+              style: TextStyle(
+                fontWeight: FontWeight.w900,
+                fontSize: 15.0,
+              ),
+            ),
+          ),
+        ),
+      )
+    : SizedBox()
         ],
       ),
       body: CustomScrollView(
